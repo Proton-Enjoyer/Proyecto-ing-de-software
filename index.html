@@ -1,20 +1,30 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <!-- Carga los estilos de Leaflet -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <title>Proyecto Ing</title>
-  </head>
-  <body>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RunWell</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">RunWell</div>
+            <ul>
+                <li><a href="#">Inicio</a></li>
+                <li><a href="#">Planes</a></li>
+                <li><button id="cta-btn">Empezar</button></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <h1>Transforma tu cuerpo.</h1>
+            <p>Rutinas personalizadas, seguimiento en tiempo real y resultados reales.</p>
+            <button id="hero-btn">Únete ahora</button>
+        </section>
+    </main>
 
-    <div id="map" style="height: 500px;"></div>
-    <!-- Carga la librería de Leaflet -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="app.js"></script>
-
-    <div id="contenedor-mensaje">Esperando accion...</div>
-    <button id="mi-boton">Cambiar texto</button>
-    
-    <script src="app.js">  </script>
-  </body>
+    <script src="script.js"></script>
+</body>
 </html>
