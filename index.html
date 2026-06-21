@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RunWell</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
     <header>
@@ -21,10 +23,18 @@
         <section class="hero">
             <h1>Transforma tu cuerpo.</h1>
             <p>Rutas personalizadas, seguimiento en tiempo real y resultados reales.</p>
-            <button id="hero-btn">Únete ahora</button>
-        </section>
+            <button id="hero-btn">Unete ahora</button>
+        </section>    
     </main>
-
+    
+    <!-- Añade esto después del </main> -->
+    <div id="map-container" class="map-hidden">
+      <button id="close-map">X</button>
+      <div id="map"></div>
+    </div>
+    
     <script src="script.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </body>
 </html>
