@@ -4,6 +4,23 @@
     --primary: #FFFE42;
 }
 
+/* Variables para modo oscuro */
+.dark-theme {
+    --bg: #121212;
+    --text: #ffffff;
+    --primary: #d4d400;
+}
+
+/* Hack para que los mapas de OpenStreetMap no brillen tanto */
+.dark-theme #map {
+    filter: invert(90%) hue-rotate(180deg);
+}
+
+/* Asegurar que el contenedor del mapa también use el fondo oscuro */
+.dark-theme #map-container.map-active {
+    background-color: var(--bg);
+}
+
 body {
     margin: 0;
     font-family: 'Segoe UI', sans-serif;
@@ -29,6 +46,7 @@ nav ul { display: flex; list-style: none; gap: 2rem; align-items: center; }
 .hero {
     text-align: center;
     padding: 100px 20px;
+    display: block !important;
 }
 
 h1 { font-size: 4rem; margin-bottom: 1rem; }
@@ -40,7 +58,7 @@ a {
 
 button {
     background-color: var(--primary);
-    color: var(--text);
+    color: #121212;
     border: none;
     padding: 1rem 2rem;
     border-radius: 50px;
@@ -49,10 +67,17 @@ button {
     transition: transform 0.3s ease;
 }
 
+#planes-btn {
+    background-color: var(--bg);
+}
+
 button:hover { transform: scale(1.1); }
 
 /* --- MAPA --- */
 .map-hidden { display: none; }
+
+/* Clase para ocultar elementos */
+.hidden { display: none !important; }
 
 #map-container.map-active {
     display: block;
@@ -97,69 +122,92 @@ button:hover { transform: scale(1.1); }
     height: 15px !important;
 }
 
-/* Ocultar el contenedor por defecto */
-.map-hidden { display: none; }
-
-#map-container.map-active {
-    display: block;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    z-index: 1000;
-    background-color: var(--dark);
-}
-#map { width: 100%; height: 100%; }
-
-#close-map {
-    position: absolute;
-    top: 10px; right: 10px;
-    z-index: 1001; /* Sobre el mapa */
-    padding: 10px 20px;
-}
-
-body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background-color: var(--dark);
-    color: var(--text);
-}
-
-nav {
-    display: flex;
-    justify-content: space-between;
-    padding: 2rem 5%;
-    align-items: center;
-}
-
-.logo {
-    color: var(--bright);
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-nav ul { display: flex; list-style: none; gap: 2rem; align-items: center; }
-
-.hero {
+/* Estilo del cronómetro dentro del popup */
+#timer-display {
+    margin-top: 10px;
+    padding: 10px;
+    background: var(--bg);
+    border: 1px solid var(--text);
     text-align: center;
-    padding: 100px 20px;
+    border-radius: 10px;
 }
 
-h1 { font-size: 4rem; margin-bottom: 1rem; }
-
-a {  
-  text-decoration: none;
-  color: var(--text);
-}
-
-button {
-    background-color: var(--primary);
-    color: var(--text);
-    border: none;
-    padding: 1rem 2rem;
-    border-radius: 50px;
+.popup-btn {
+    margin-top: 5px;
+    width: 100%;
     cursor: pointer;
+    background-color: var(--primary);
+    border: none;
+    padding: 5px;
+    border-radius: 5px;
     font-weight: bold;
-    transition: transform 0.3s ease;
 }
 
-button:hover { transform: scale(1.1); }
+/* Toggle Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.switch input { display: none; }
+
+.slider {
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; bottom: 0;
+    background-color: #ccc;
+    border-radius: 24px;
+    transition: 0.3s;
+}
+
+.slider::before {
+    content: "";
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.switch input:checked + .slider {
+    background-color: var(--primary);
+}
+
+.switch input:checked + .slider::before {
+    transform: translateX(20px);
+}
+
+/* --- PLANES --- */
+/* Animación */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in { animation: fadeIn 0.5s ease-out forwards; }
+
+/* Sección Planes */
+.planes-section { padding: 50px 20px; text-align: center; }
+
+.planes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.event-card {
+    border: 2px solid var(--text);
+    padding: 20px;
+    border-radius: 15px;
+}

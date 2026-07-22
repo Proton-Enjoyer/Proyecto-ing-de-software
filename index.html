@@ -13,8 +13,14 @@
         <nav>
             <div class="logo">RunWell</div>
             <ul id='items'>
-                <li><a href="#">Inicio</a></li>
-                <li><a href="#">Planes</a></li>
+                <li><a href="#" id="inicio-btn">Inicio</a></li>
+                <li><a href="#" id="eventos-btn">Eventos</a></li>
+                <li>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </li>
                 <li><button id="cta-btn">Empezar</button></li>
             </ul>
         </nav>
@@ -24,7 +30,14 @@
             <h1>Transforma tu cuerpo.</h1>
             <p>Rutas personalizadas, seguimiento en tiempo real y resultados reales.</p>
             <button id="hero-btn">Unete ahora</button>
-        </section>    
+        </section>
+        
+        <section id="planes-section" class="planes-section hidden">
+            <h2>Próximos Eventos</h2>
+            <div class="planes-grid">
+                <!-- Se llenará dinámicamente desde script.js -->
+            </div>
+        </section>
     </main>
     
     <!-- Añade esto después del </main> -->
