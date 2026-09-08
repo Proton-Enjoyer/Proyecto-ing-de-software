@@ -1,0 +1,21 @@
+INTRODUCCIÓN
+
+RunWell es una aplicación web de seguimiento de running desarrollada como proyecto
+académico de Ingeniería de Software. Su objetivo es ofrecer al usuario rutas de
+entrenamiento personalizadas en la ciudad de Maracaibo, junto con un seguimiento
+en tiempo real de cada sesión de carrera.
+
+La aplicación está construida como un frontend puro con HTML, CSS y JavaScript,
+sin frameworks ni backend. Para el mapeo y la visualización de rutas utiliza la
+librería Leaflet junto con los mapas de OpenStreetMap.
+
+Funcionalidades actuales:
+- Visualización de rutas predefinidas en Maracaibo (zonas de LUZ y Paseo Sur).
+- Mapa interactivo que dibuja las rutas sobre la ciudad.
+- Selección de eventos con día y hora programados para cada ruta.
+- Cronómetro integrado en el mapa para iniciar y detener una sesión de carrera.
+- Modo oscuro.
+
+La documentación del proyecto define además casos de uso planificados a futuro,
+como registro e inicio de sesión, selección y filtrado de rutas, dashboard de
+estadísticas e historial de progreso del usuario.
