@@ -14,6 +14,8 @@ Funcionalidades actuales:
 - Mapa interactivo que dibuja las rutas sobre la ciudad.
 - Selección de eventos con día y hora programados para cada ruta.
 - Cronómetro integrado en el mapa para iniciar y detener una sesión de carrera.
+- Geolocalización del usuario: marcador azul sobre el mapa, botón para centrar
+  la vista en su ubicación y rastreo en vivo del GPS mientras corre una ruta.
 - Modo oscuro.
 
 La documentación del proyecto define además casos de uso planificados a futuro,

@@ -59,11 +59,71 @@ const heroSection = document.querySelector('.hero');
 const eventosSection = document.getElementById('planes-section');
 const btnEmpezar = document.getElementById('cta-btn');
 const btnInicio = document.getElementById('inicio-btn');
+const btnUbicar = document.getElementById('locate-btn');
 const menuItems = document.getElementById('items');
 const btnTheme = document.getElementById('theme-toggle');
 
 // 3. Lógica para abrir mapa
 let mapa;
+let userMarker = null;
+let watchId = null;
+let timerInterval = null;
+
+// Icono del usuario (se crea al usarlo, cuando Leaflet ya cargó)
+let userIcon = null;
+function iconoUsuario() {
+    if (!userIcon) {
+        userIcon = L.divIcon({
+            className: 'user-marker',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+    }
+    return userIcon;
+}
+
+// 3.1 Geolocalización
+function obtenerUbicacion(centrar) {
+    if (!navigator.geolocation) {
+        console.warn('Geolocalización no soportada por el navegador');
+        return;
+    }
+    navigator.geolocation.getCurrentPosition((pos) => {
+        const coords = [pos.coords.latitude, pos.coords.longitude];
+        if (userMarker) {
+            userMarker.setLatLng(coords);
+        } else {
+            userMarker = L.marker(coords, { icon: iconoUsuario() }).addTo(mapa).bindPopup('Estás aquí');
+        }
+        if (centrar) {
+            mapa.flyTo(coords, 15);
+        }
+    }, (err) => {
+        console.warn('Error de geolocalización:', err.message);
+    }, { enableHighAccuracy: true, maximumAge: 5000 });
+}
+
+function iniciarSeguimiento() {
+    if (!navigator.geolocation) return;
+    watchId = navigator.geolocation.watchPosition((pos) => {
+        const coords = [pos.coords.latitude, pos.coords.longitude];
+        if (userMarker) {
+            userMarker.setLatLng(coords);
+        } else {
+            userMarker = L.marker(coords, { icon: iconoUsuario() }).addTo(mapa);
+        }
+    }, (err) => {
+        console.warn('Error de seguimiento:', err.message);
+    }, { enableHighAccuracy: true, maximumAge: 2000 });
+}
+
+function detenerSeguimiento() {
+    if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+    }
+}
+
 function abrirMapa(rutaIndex = null) {
     mapContainer.classList.add('map-active');
     
@@ -134,10 +194,14 @@ function abrirMapa(rutaIndex = null) {
                 popupContent.querySelector(`#time-${currentIdx}`).innerText = 
                     `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
             }, 1000);
+
+            // Rastrear la ubicación del usuario en tiempo real mientras corre
+            iniciarSeguimiento();
         });
         
         popupContent.querySelector(`#stop-${currentIdx}`).addEventListener('click', () => {
             clearInterval(timerInterval);
+            detenerSeguimiento();
             popupContent.querySelector(`#timer-box-${currentIdx}`).style.display = 'none';
             popupContent.querySelector(`#start-${currentIdx}`).style.display = 'block';
         });
@@ -153,6 +217,9 @@ function abrirMapa(rutaIndex = null) {
         mapa.fitBounds(allCoords, { padding: [50, 50] });
     }
     mapa.invalidateSize();
+
+    // Localizar al usuario sin centrar (el mapa se ajusta a las rutas)
+    obtenerUbicacion(false);
 }
 
 // 4. Listeners generales
@@ -161,6 +228,9 @@ btnVerRutas.addEventListener('click', () => abrirMapa());
 btnCerrar.addEventListener('click', () => {
     mapContainer.classList.remove('map-active');
 });
+
+// Botón para centrar el mapa en la ubicación del usuario
+btnUbicar.addEventListener('click', () => obtenerUbicacion(true));
 
 // 5. Ocultar sección Hero y mostrar Eventos con animación
 btnEventos.addEventListener('click', (e) => {
