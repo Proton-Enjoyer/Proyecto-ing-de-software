@@ -43,11 +43,12 @@
     <!-- Añade esto después del </main> -->
     <div id="map-container" class="map-hidden">
       <button id="close-map">X</button>
+      <button id="locate-btn" title="Mi ubicación">📍</button>
       <div id="map"></div>
     </div>
     
-    <script src="script.js"></script>
-    <!-- Leaflet JS -->
+    <!-- Leaflet JS (debe cargarse antes de script.js) -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
