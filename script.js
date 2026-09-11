@@ -140,7 +140,7 @@ function abrirMapa(rutaIndex = null) {
             mapa.removeLayer(layer);
         }
     });
-    
+    //Algo
     // Dibujar rutas y ajustar vista
     const allCoords = [];
     
