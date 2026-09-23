@@ -46,7 +46,20 @@
       <button id="locate-btn" title="Mi ubicación">📍</button>
       <div id="map"></div>
     </div>
-    
+
+    <!-- Prompt de proximidad: aparece cuando estás cerca de una ruta -->
+    <div id="proximity-prompt" class="proximity-hidden" role="alertdialog" aria-live="polite">
+        <button id="pp-close" class="pp-close" title="Cerrar">✕</button>
+        <p class="pp-title">¡Estás en <strong id="pp-ruta">—</strong>!</p>
+        <p class="pp-dist" id="pp-dist"></p>
+        <p class="pp-sub">¿Qué quieres iniciar?</p>
+        <div class="pp-actions">
+            <button id="pp-trote" class="pp-btn">🏃 Trote</button>
+            <button id="pp-carrera" class="pp-btn pp-btn-alt">⚡ Carrera</button>
+        </div>
+        <button id="pp-ignorar" class="pp-ignore">Ahora no</button>
+    </div>
+
     <!-- Leaflet JS (debe cargarse antes de script.js) -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="script.js"></script>
