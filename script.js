@@ -60,17 +60,52 @@ const eventosSection = document.getElementById('planes-section');
 const btnEmpezar = document.getElementById('cta-btn');
 const btnInicio = document.getElementById('inicio-btn');
 const btnUbicar = document.getElementById('locate-btn');
-const menuItems = document.getElementById('items');
 const btnTheme = document.getElementById('theme-toggle');
 
-// 3. Lógica para abrir mapa
+// Prompt de proximidad (aparece cuando estás cerca de una ruta)
+const promptCercania = document.getElementById('proximity-prompt');
+const ppRuta = document.getElementById('pp-ruta');
+const ppDist = document.getElementById('pp-dist');
+const ppTrote = document.getElementById('pp-trote');
+const ppCarrera = document.getElementById('pp-carrera');
+const ppIgnorar = document.getElementById('pp-ignorar');
+const ppCerrar = document.getElementById('pp-close');
+
+// 3. Estado global
 let mapa;
 let userMarker = null;
-let watchId = null;
-let timerInterval = null;
+let userIcon = null;
+
+// Seguimiento de posición (permanente mientras la pestaña esté abierta)
+let posActual = null;      // última posición conocida [lat, lng]
+let seguimientoId = null;  // watchId del GPS
+
+// Trazado del recorrido (la línea por donde pasaste)
+let trazaCoords = [];
+let trazaLinea = null;
+
+// Actividad en curso (trote o carrera)
+const TIPOS = { trote: '🏃 Trote', carrera: '⚡ Carrera' };
+const actividad = {
+    activa: false,
+    rutaIdx: null,
+    tipo: null,
+    seconds: 0,
+    interval: null
+};
+
+// Detección de proximidad: ¿el usuario está sobre/ cerca de una ruta?
+const UMBRAL_RUTA_METROS = 50;    // radio para considerar "llegaste a la ruta"
+const COOLDOWN_PROMPT_MS = 20000; // evita repetir el mismo aviso inmediatamente
+let rutaDetectada = null;
+let ultimaDeteccion = 0;
+let promptVisible = false;
+
+// Popups de Leaflet registrados por ruta (se llenan al dibujarlos en abrirMapa).
+// El popup vive fuera del `document` hasta que se abre, así que lo buscamos aquí.
+let popupsRuta = {};
 
 // Icono del usuario (se crea al usarlo, cuando Leaflet ya cargó)
-let userIcon = null;
 function iconoUsuario() {
     if (!userIcon) {
         userIcon = L.divIcon({
@@ -82,68 +117,267 @@ function iconoUsuario() {
     return userIcon;
 }
 
-// 3.1 Geolocalización
+// --- Utilidades ---
+function formatoTiempo(totalSeg) {
+    const mins = Math.floor(totalSeg / 60);
+    const secs = totalSeg % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Distancia de un punto P a un segmento A→B (todo en metros, sistema local)
+function distPuntoSegmento(px, py, ax, ay, bx, by) {
+    const abx = bx - ax;
+    const aby = by - ay;
+    const len2 = abx * abx + aby * aby;
+    let t = len2 === 0 ? 0 : ((px - ax) * abx + (py - ay) * aby) / len2;
+    t = Math.max(0, Math.min(1, t));          // t recortado al segmento
+    return Math.hypot(px - (ax + t * abx), py - (ay + t * aby));
+}
+
+// Distancia mínima en metros entre el usuario y la polilínea de una ruta.
+// Proyectamos grados → metros alrededor de la posición del usuario (preciso
+// para distancias cortas, que es lo que nos importa aquí).
+function distanciaARuta(ruta, pos) {
+    const mLat = 111320;                                     // metros por grado de latitud
+    const mLng = 111320 * Math.cos(pos[0] * Math.PI / 180);  // metros por grado de longitud
+    let min = Infinity;
+    for (let i = 0; i < ruta.coords.length - 1; i++) {
+        const a = ruta.coords[i];
+        const b = ruta.coords[i + 1];
+        // El usuario queda en el origen (0,0) del sistema local
+        const ax = (a[1] - pos[1]) * mLng, ay = (a[0] - pos[0]) * mLat;
+        const bx = (b[1] - pos[1]) * mLng, by = (b[0] - pos[0]) * mLat;
+        const d = distPuntoSegmento(0, 0, ax, ay, bx, by);
+        if (d < min) min = d;
+    }
+    return min;
+}
+
+// 3.1 Geolocalización: pide permiso y deja el GPS corriendo de forma continua
+function iniciarTracking() {
+    if (!navigator.geolocation) {
+        console.warn('Geolocalización no soportada por el navegador');
+        return;
+    }
+    if (seguimientoId !== null) return; // ya está corriendo
+
+    // Primera lectura (con esto el navegador pide el permiso al usuario)
+    navigator.geolocation.getCurrentPosition(
+        (pos) => manejarPosicion(pos),
+        (err) => console.warn('Error de geolocalización:', err.message),
+        { enableHighAccuracy: true, maximumAge: 5000 }
+    );
+
+    // Seguimiento continuo: se actualiza solito mientras la pestaña esté abierta
+    seguimientoId = navigator.geolocation.watchPosition(
+        (pos) => manejarPosicion(pos),
+        (err) => console.warn('Error de seguimiento:', err.message),
+        { enableHighAccuracy: true, maximumAge: 2000 }
+    );
+}
+
+function detenerTracking() {
+    if (seguimientoId !== null) {
+        navigator.geolocation.clearWatch(seguimientoId);
+        seguimientoId = null;
+    }
+}
+
+// Se ejecuta con CADA actualización del GPS
+function manejarPosicion(pos) {
+    posActual = [pos.coords.latitude, pos.coords.longitude];
+
+    // Mover (o crear) el marcador del usuario en el mapa
+    if (mapa) {
+        if (userMarker) {
+            userMarker.setLatLng(posActual);
+        } else {
+            userMarker = L.marker(posActual, { icon: iconoUsuario() })
+                .addTo(mapa)
+                .bindPopup('Estás aquí');
+        }
+    }
+
+    // Acumular la traza solo mientras dura la actividad
+    if (actividad.activa) {
+        trazaCoords.push(posActual);
+        refrescarTraza();
+    }
+
+    // ¿Hay alguna ruta cerca? → dispara el prompt
+    evaluarProximidad();
+}
+
+// Ubicación puntual (la usa el botón 📍 y al abrir el mapa)
 function obtenerUbicacion(centrar) {
     if (!navigator.geolocation) {
         console.warn('Geolocalización no soportada por el navegador');
         return;
     }
     navigator.geolocation.getCurrentPosition((pos) => {
-        const coords = [pos.coords.latitude, pos.coords.longitude];
+        posActual = [pos.coords.latitude, pos.coords.longitude];
         if (userMarker) {
-            userMarker.setLatLng(coords);
-        } else {
-            userMarker = L.marker(coords, { icon: iconoUsuario() }).addTo(mapa).bindPopup('Estás aquí');
+            userMarker.setLatLng(posActual);
+        } else if (mapa) {
+            userMarker = L.marker(posActual, { icon: iconoUsuario() })
+                .addTo(mapa)
+                .bindPopup('Estás aquí');
         }
-        if (centrar) {
-            mapa.flyTo(coords, 15);
+        if (centrar && mapa) {
+            mapa.flyTo(posActual, 15);
         }
     }, (err) => {
         console.warn('Error de geolocalización:', err.message);
     }, { enableHighAccuracy: true, maximumAge: 5000 });
 }
 
-function iniciarSeguimiento() {
-    if (!navigator.geolocation) return;
-    watchId = navigator.geolocation.watchPosition((pos) => {
-        const coords = [pos.coords.latitude, pos.coords.longitude];
-        if (userMarker) {
-            userMarker.setLatLng(coords);
-        } else {
-            userMarker = L.marker(coords, { icon: iconoUsuario() }).addTo(mapa);
+// 3.2 Colisión: ¿está el usuario sobre alguna ruta?
+function evaluarProximidad() {
+    // Sin posición, con actividad en curso o con el prompt ya abierto → nada
+    if (!posActual || actividad.activa || promptVisible) return;
+
+    let idxMejor = -1;
+    let minDist = Infinity;
+    misRutas.forEach((ruta, i) => {
+        const d = distanciaARuta(ruta, posActual);
+        if (d < minDist) {
+            minDist = d;
+            idxMejor = i;
         }
-    }, (err) => {
-        console.warn('Error de seguimiento:', err.message);
-    }, { enableHighAccuracy: true, maximumAge: 2000 });
+    });
+
+    if (idxMejor === -1 || minDist > UMBRAL_RUTA_METROS) {
+        rutaDetectada = null; // salió del radio: se puede volver a avisar luego
+        return;
+    }
+
+    // No spamear el mismo aviso
+    const ahora = Date.now();
+    if (idxMejor === rutaDetectada && ahora - ultimaDeteccion < COOLDOWN_PROMPT_MS) {
+        return;
+    }
+
+    mostrarPrompt(idxMejor, minDist);
 }
 
-function detenerSeguimiento() {
-    if (watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
-        watchId = null;
+function mostrarPrompt(idx, dist) {
+    rutaDetectada = idx;
+    ultimaDeteccion = Date.now();
+    promptVisible = true;
+    ppRuta.innerText = misRutas[idx].nombre;
+    ppDist.innerText = `A ${Math.round(dist)} m de la ruta`;
+    promptCercania.classList.remove('proximity-hidden');
+}
+
+function ocultarPrompt() {
+    promptVisible = false;
+    promptCercania.classList.add('proximity-hidden');
+}
+
+function iniciarDesdePrompt(tipo) {
+    const idx = rutaDetectada;
+    ocultarPrompt();
+    if (idx === null) return;
+    abrirMapa(idx);                 // mostrar solo esa ruta
+    iniciarActividad(idx, tipo);    // arrancar cronómetro + traza
+}
+
+// 3.3 Actividad (trote o carrera) con cronómetro
+function iniciarActividad(rutaIdx, tipo = 'trote') {
+    if (actividad.activa) detenerActividad();
+
+    actividad.activa = true;
+    actividad.rutaIdx = rutaIdx;
+    actividad.tipo = tipo;
+    actividad.seconds = 0;
+    actividad.interval = setInterval(tickActividad, 1000);
+
+    refrescarPopup(rutaIdx);
+    console.info(`Actividad iniciada → ${TIPOS[tipo]} en ${misRutas[rutaIdx].nombre}`);
+}
+
+function detenerActividad() {
+    if (!actividad.activa) return;
+    const idx = actividad.rutaIdx;
+    clearInterval(actividad.interval);
+    actividad.interval = null;
+    actividad.activa = false;
+    refrescarPopup(idx);
+    console.info(`Actividad detenida → duración ${formatoTiempo(actividad.seconds)}`);
+    actividad.tipo = null;
+}
+
+function tickActividad() {
+    actividad.seconds++;
+    const el = document.getElementById(`time-${actividad.rutaIdx}`);
+    if (el) el.innerText = formatoTiempo(actividad.seconds);
+}
+
+// Sincroniza el popup de una ruta con el estado real de la actividad.
+function refrescarPopup(rutaIdx) {
+    const root = popupsRuta[rutaIdx];
+    if (!root) return;
+    const grupoInicio = root.querySelector(`#inicio-${rutaIdx}`);
+    const box = root.querySelector(`#timer-box-${rutaIdx}`);
+    const lblTipo = root.querySelector(`#tipo-${rutaIdx}`);
+    const lblTime = root.querySelector(`#time-${rutaIdx}`);
+    if (!grupoInicio || !box) return;
+
+    const enEstaRuta = actividad.activa && actividad.rutaIdx === rutaIdx;
+    grupoInicio.style.display = enEstaRuta ? 'none' : 'block';
+    box.style.display = enEstaRuta ? 'block' : 'none';
+
+    if (enEstaRuta) {
+        if (lblTipo) lblTipo.innerText = TIPOS[actividad.tipo] || '';
+        if (lblTime) lblTime.innerText = formatoTiempo(actividad.seconds);
     }
 }
 
+// Línea por donde fuiste corriendo (se redibuja con cada posición nueva)
+function refrescarTraza() {
+    if (!mapa) return;
+    if (trazaLinea) {
+        mapa.removeLayer(trazaLinea);
+        trazaLinea = null;
+    }
+    if (trazaCoords.length > 1) {
+        trazaLinea = L.polyline(trazaCoords, {
+            color: '#4285F4',
+            weight: 4,
+            opacity: 0.85,
+            dashArray: '1 12',
+            lineCap: 'round'
+        }).addTo(mapa);
+    }
+}
+
+// 4. Abrir mapa y dibujar rutas
 function abrirMapa(rutaIndex = null) {
     mapContainer.classList.add('map-active');
-    
+
     // Inicializar mapa solo la primera vez
     if (!mapa) {
         // Centro en la Facultad Experimental de Ciencias, LUZ
         mapa = L.map('map').setView([10.686, -71.645], 15);
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
     }
-    
+
     // Limpiar capas previas
     mapa.eachLayer((layer) => {
         if (layer instanceof L.Polyline || layer instanceof L.Marker) {
             mapa.removeLayer(layer);
         }
     });
-    //Algo
+    // FIX: esos marcadores ya no están en el mapa, así que reiniciamos las
+    // referencias. Si no, manejarPosicion() movería marcadores "fantasma"
+    // y el punto azul del usuario desaparecía al reabrir el mapa.
+    userMarker = null;
+    trazaLinea = null;
+    popupsRuta = {};
+
     // Dibujar rutas y ajustar vista
     const allCoords = [];
-    
+
     // Marcadores personalizados con CSS
     const markerStyle = L.divIcon({
         className: 'custom-marker',
@@ -154,7 +388,7 @@ function abrirMapa(rutaIndex = null) {
     const rutasAProcesar = rutaIndex !== null ? [misRutas[rutaIndex]] : misRutas;
 
     rutasAProcesar.forEach((ruta, idx) => {
-        // Polilínea más elegante
+        // Polilínea de la ruta
         L.polyline(ruta.coords, {
             color: '#FFFE42', // Color primario
             weight: 6,
@@ -162,67 +396,66 @@ function abrirMapa(rutaIndex = null) {
             lineCap: 'round',
             lineJoin: 'round'
         }).addTo(mapa);
-        
+
         allCoords.push(...ruta.coords);
-        
-        // Crear contenido del popup (SIN hora ni dia)
+
+        const currentIdx = rutaIndex !== null ? rutaIndex : idx;
+
+        // Contenido del popup: elegir tipo o ver el cronómetro
         const popupContent = document.createElement('div');
-        const currentIdx = rutaIndex !== null ? rutaIndex : idx; 
         popupContent.innerHTML = `
             <b>${ruta.nombre}</b><br>
-            <button id="start-${currentIdx}" class="popup-btn">Iniciar Ruta</button>
+            <div id="inicio-${currentIdx}">
+                <button class="popup-btn" data-tipo="trote">🏃 Trote</button>
+                <button class="popup-btn" data-tipo="carrera" style="margin-top:6px;">⚡ Carrera</button>
+            </div>
             <div id="timer-box-${currentIdx}" style="display:none; margin-top:10px; text-align:center;">
+                <span id="tipo-${currentIdx}" class="popup-tipo"></span><br>
                 <span id="time-${currentIdx}" style="font-size: 1.5rem; font-weight: bold;">00:00</span><br>
                 <button id="stop-${currentIdx}" class="popup-btn" style="background-color: #ff4d4d; color: white;">Detener</button>
             </div>
         `;
-        
-        // Lógica del temporizador
-        let seconds = 0;
-        let timerInterval;
-        
-        popupContent.querySelector(`#start-${currentIdx}`).addEventListener('click', (e) => {
-            e.target.style.display = 'none';
-            const timerBox = popupContent.querySelector(`#timer-box-${currentIdx}`);
-            timerBox.style.display = 'block';
-            
-            seconds = 0;
-            timerInterval = setInterval(() => {
-                seconds++;
-                const mins = Math.floor(seconds / 60);
-                const secs = seconds % 60;
-                popupContent.querySelector(`#time-${currentIdx}`).innerText = 
-                    `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            }, 1000);
 
-            // Rastrear la ubicación del usuario en tiempo real mientras corre
-            iniciarSeguimiento();
+        // Botones Trote / Carrera → inician la actividad
+        popupContent.querySelectorAll(`#inicio-${currentIdx} button`).forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                iniciarActividad(currentIdx, btn.dataset.tipo);
+            });
         });
-        
-        popupContent.querySelector(`#stop-${currentIdx}`).addEventListener('click', () => {
-            clearInterval(timerInterval);
-            detenerSeguimiento();
-            popupContent.querySelector(`#timer-box-${currentIdx}`).style.display = 'none';
-            popupContent.querySelector(`#start-${currentIdx}`).style.display = 'block';
+
+        // Botón Detener
+        popupContent.querySelector(`#stop-${currentIdx}`).addEventListener('click', (e) => {
+            e.stopPropagation();
+            detenerActividad();
         });
-        
-        // Marcadores de inicio y fin estilizados
+
+        // Registrar el popup: así podemos actualizarlo aunque esté cerrado
+        popupsRuta[currentIdx] = popupContent;
+
+        // Reflejar el estado actual (por si esta ruta ya está activa)
+        refrescarPopup(currentIdx);
+
+        // Marcadores de inicio y fin estilizados (comparten el mismo popup)
         L.marker(ruta.coords[0], { icon: markerStyle }).addTo(mapa)
             .bindPopup(popupContent);
         L.marker(ruta.coords[ruta.coords.length - 1], { icon: markerStyle }).addTo(mapa)
             .bindPopup(popupContent);
     });
-    
+
     if (allCoords.length > 0) {
         mapa.fitBounds(allCoords, { padding: [50, 50] });
     }
     mapa.invalidateSize();
 
+    // Redibujar la traza si había una actividad en curso
+    refrescarTraza();
+
     // Localizar al usuario sin centrar (el mapa se ajusta a las rutas)
     obtenerUbicacion(false);
 }
 
-// 4. Listeners generales
+// 5. Listeners generales
 btnVerRutas.addEventListener('click', () => abrirMapa());
 
 btnCerrar.addEventListener('click', () => {
@@ -232,16 +465,22 @@ btnCerrar.addEventListener('click', () => {
 // Botón para centrar el mapa en la ubicación del usuario
 btnUbicar.addEventListener('click', () => obtenerUbicacion(true));
 
-// 5. Ocultar sección Hero y mostrar Eventos con animación
+// Prompt de proximidad: elegir qué iniciar
+ppTrote.addEventListener('click', () => iniciarDesdePrompt('trote'));
+ppCarrera.addEventListener('click', () => iniciarDesdePrompt('carrera'));
+ppIgnorar.addEventListener('click', ocultarPrompt);
+ppCerrar.addEventListener('click', ocultarPrompt);
+
+// 6. Ocultar sección Hero y mostrar Eventos con animación
 btnEventos.addEventListener('click', (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
     heroSection.classList.add('hidden');
     eventosSection.classList.remove('hidden');
     eventosSection.classList.add('fade-in');
 
     // Renderizar eventos dinámicamente
     const eventosGrid = document.querySelector('.planes-grid');
-    eventosGrid.innerHTML = ''; 
+    eventosGrid.innerHTML = '';
     misRutas.forEach((ruta, index) => {
         const card = document.createElement('div');
         card.className = 'event-card';
@@ -257,21 +496,30 @@ btnEventos.addEventListener('click', (e) => {
     });
 });
 
-// 6. Funcionalidad botón Inicio (reset)
+// 7. Funcionalidad botón Inicio (reset)
 btnInicio.addEventListener('click', (e) => {
     e.preventDefault();
     heroSection.classList.remove('hidden');
-    heroSection.classList.add('fade-in'); 
+    heroSection.classList.add('fade-in');
     eventosSection.classList.add('hidden');
     mapContainer.classList.remove('map-active');
 });
 
-// 7. Funcionalidad botón empezar (ir al mapa directamente)
+// 8. Funcionalidad botón empezar (ir al mapa directamente)
 btnEmpezar.addEventListener('click', () => {
     abrirMapa();
 });
 
-// 8. Modo Oscuro
+// 9. Modo Oscuro (persiste al recargar)
+if (localStorage.getItem('runwell-tema') === 'oscuro') {
+    document.body.classList.add('dark-theme');
+    btnTheme.checked = true;
+}
+
 btnTheme.addEventListener('change', () => {
     document.body.classList.toggle('dark-theme', btnTheme.checked);
+    localStorage.setItem('runwell-tema', btnTheme.checked ? 'oscuro' : 'claro');
 });
+
+// 10. Arrancar el seguimiento de ubicación (esto dispara la detección de rutas)
+iniciarTracking();

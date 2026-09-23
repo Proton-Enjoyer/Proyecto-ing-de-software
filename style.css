@@ -246,3 +246,97 @@ button:hover { transform: scale(1.1); }
     padding: 20px;
     border-radius: 15px;
 }
+
+/* --- PROMPT DE PROXIMIDAD (detección de ruta cercana) --- */
+.proximity-hidden { display: none !important; }
+
+#proximity-prompt {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    z-index: 1200;
+    width: min(92vw, 360px);
+    padding: 18px 20px;
+    background-color: var(--bg);
+    color: var(--text);
+    border: 2px solid var(--primary);
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+    text-align: center;
+    animation: fadeIn 0.35s ease-out;
+}
+
+.pp-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text);
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.pp-title {
+    margin: 0 24px 4px 0;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.pp-dist {
+    margin: 0 0 6px;
+    font-size: 0.85rem;
+    opacity: 0.75;
+}
+
+.pp-sub {
+    margin: 8px 0 12px;
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+.pp-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.pp-btn {
+    flex: 1;
+    padding: 12px 10px;
+    font-size: 0.95rem;
+    background-color: var(--primary);
+    color: #121212;
+}
+
+.pp-btn-alt {
+    background-color: var(--text);
+    color: var(--bg);
+}
+
+.pp-ignore {
+    margin-top: 10px;
+    padding: 8px 16px;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--text);
+    font-size: 0.85rem;
+    font-weight: normal;
+    opacity: 0.8;
+}
+
+/* Etiqueta del tipo de actividad dentro del popup */
+.popup-tipo {
+    display: inline-block;
+    margin-bottom: 6px;
+    padding: 2px 10px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    border-radius: 20px;
+    background-color: var(--primary);
+    color: #121212;
+}
