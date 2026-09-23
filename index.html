@@ -47,6 +47,22 @@
       <div id="map"></div>
     </div>
 
+    <!-- Panel flotante: distancia y ritmo en vivo mientras hay actividad -->
+    <div id="hud-actividad" class="hud-hidden">
+        <div class="hud-cell">
+            <span class="hud-valor" id="hud-time">00:00</span>
+            <span class="hud-label">Tiempo</span>
+        </div>
+        <div class="hud-cell">
+            <span class="hud-valor" id="hud-dist">0.00</span>
+            <span class="hud-label">Kilómetros</span>
+        </div>
+        <div class="hud-cell">
+            <span class="hud-valor" id="hud-ritmo">--:--</span>
+            <span class="hud-label">min/km</span>
+        </div>
+    </div>
+
     <!-- Prompt de proximidad: aparece cuando estás cerca de una ruta -->
     <div id="proximity-prompt" class="proximity-hidden" role="alertdialog" aria-live="polite">
         <button id="pp-close" class="pp-close" title="Cerrar">✕</button>

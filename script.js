@@ -71,6 +71,12 @@ const ppCarrera = document.getElementById('pp-carrera');
 const ppIgnorar = document.getElementById('pp-ignorar');
 const ppCerrar = document.getElementById('pp-close');
 
+// Panel flotante con distancia y ritmo en vivo mientras hay actividad
+const hudPanel = document.getElementById('hud-actividad');
+const hudTime = document.getElementById('hud-time');
+const hudDist = document.getElementById('hud-dist');
+const hudRitmo = document.getElementById('hud-ritmo');
+
 // 3. Estado global
 let mapa;
 let userMarker = null;
@@ -83,6 +89,9 @@ let seguimientoId = null;  // watchId del GPS
 // Trazado del recorrido (la línea por donde pasaste)
 let trazaCoords = [];
 let trazaLinea = null;
+
+// Distancia acumulada durante la actividad actual (metros)
+let distanciaTotal = 0;
 
 // Actividad en curso (trote o carrera)
 const TIPOS = { trote: '🏃 Trote', carrera: '⚡ Carrera' };
@@ -122,6 +131,24 @@ function formatoTiempo(totalSeg) {
     const mins = Math.floor(totalSeg / 60);
     const secs = totalSeg % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Distancia en metros entre dos puntos [lat, lng] (fórmula de Haversine)
+function distanciaMetros(a, b) {
+    const R = 6371000;
+    const rad = (grados) => grados * Math.PI / 180;
+    const dLat = rad(b[0] - a[0]);
+    const dLng = rad(b[1] - a[1]);
+    const h = Math.sin(dLat / 2) ** 2 +
+              Math.cos(rad(a[0])) * Math.cos(rad(b[0])) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+// Ritmo en min/km ("05:42"); sin distancia o sin tiempo → "--:--"
+function ritmoMinPorKm(segundos, metros) {
+    if (metros < 5 || segundos <= 0) return '--:--';
+    const segPorKm = segundos / (metros / 1000);
+    return formatoTiempo(Math.round(segPorKm));
 }
 
 // Distancia de un punto P a un segmento A→B (todo en metros, sistema local)
@@ -198,10 +225,15 @@ function manejarPosicion(pos) {
         }
     }
 
-    // Acumular la traza solo mientras dura la actividad
+    // Acumular la traza (y la distancia) solo mientras dura la actividad
     if (actividad.activa) {
-        trazaCoords.push(posActual);
+        const punto = [posActual[0], posActual[1], Date.now()];
+        if (trazaCoords.length > 0) {
+            distanciaTotal += distanciaMetros(trazaCoords[trazaCoords.length - 1], punto);
+        }
+        trazaCoords.push(punto);
         refrescarTraza();
+        actualizarPanelActividad();
     }
 
     // ¿Hay alguna ruta cerca? → dispara el prompt
@@ -286,11 +318,19 @@ function iniciarDesdePrompt(tipo) {
 function iniciarActividad(rutaIdx, tipo = 'trote') {
     if (actividad.activa) detenerActividad();
 
+    // Cada actividad empieza con traza y distancia en cero
+    trazaCoords = [];
+    distanciaTotal = 0;
+    refrescarTraza();
+
     actividad.activa = true;
     actividad.rutaIdx = rutaIdx;
     actividad.tipo = tipo;
     actividad.seconds = 0;
     actividad.interval = setInterval(tickActividad, 1000);
+
+    hudPanel.classList.remove('hud-hidden');
+    actualizarPanelActividad();
 
     refrescarPopup(rutaIdx);
     console.info(`Actividad iniciada → ${TIPOS[tipo]} en ${misRutas[rutaIdx].nombre}`);
@@ -302,6 +342,11 @@ function detenerActividad() {
     clearInterval(actividad.interval);
     actividad.interval = null;
     actividad.activa = false;
+
+    // Última actualización del panel y ocultarlo
+    actualizarPanelActividad();
+    hudPanel.classList.add('hud-hidden');
+
     refrescarPopup(idx);
     console.info(`Actividad detenida → duración ${formatoTiempo(actividad.seconds)}`);
     actividad.tipo = null;
@@ -311,6 +356,14 @@ function tickActividad() {
     actividad.seconds++;
     const el = document.getElementById(`time-${actividad.rutaIdx}`);
     if (el) el.innerText = formatoTiempo(actividad.seconds);
+    actualizarPanelActividad();
+}
+
+// Mantiene el panel flotante (tiempo, km y ritmo) al día
+function actualizarPanelActividad() {
+    hudTime.innerText = formatoTiempo(actividad.seconds);
+    hudDist.innerText = (distanciaTotal / 1000).toFixed(2);
+    hudRitmo.innerText = ritmoMinPorKm(actividad.seconds, distanciaTotal);
 }
 
 // Sincroniza el popup de una ruta con el estado real de la actividad.
