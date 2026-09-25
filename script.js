@@ -181,38 +181,104 @@ function distanciaARuta(ruta, pos) {
 }
 
 // 3.1 Geolocalización: pide permiso y deja el GPS corriendo de forma continua
-function iniciarTracking() {
-    if (!navigator.geolocation) {
-        console.warn('Geolocalización no soportada por el navegador');
-        return;
-    }
-    if (seguimientoId !== null) return; // ya está corriendo
-
-    // Primera lectura (con esto el navegador pide el permiso al usuario)
-    navigator.geolocation.getCurrentPosition(
-        (pos) => manejarPosicion(pos),
-        (err) => console.warn('Error de geolocalización:', err.message),
-        { enableHighAccuracy: true, maximumAge: 5000 }
-    );
-
-    // Seguimiento continuo: se actualiza solito mientras la pestaña esté abierta
-    seguimientoId = navigator.geolocation.watchPosition(
-        (pos) => manejarPosicion(pos),
-        (err) => console.warn('Error de seguimiento:', err.message),
-        { enableHighAccuracy: true, maximumAge: 2000 }
-    );
+// Muestra una alerta visual si falla el GPS
+function mostrarErrorGPS(mensaje) {
+  let alerta = document.getElementById('alerta-gps');
+  if (!alerta) {
+    alerta = document.createElement('div');
+    alerta.id = 'alerta-gps';
+    alerta.style.cssText = `
+      position: fixed; bottom: 20px; right: 20px; z-index: 2000;
+      background: #ff4d4d; color: white; padding: 12px 18px;
+      border-radius: 8px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      font-size: 0.9rem; transition: opacity 0.3s;
+    `;
+    document.body.appendChild(alerta);
+  }
+  alerta.textContent = mensaje;
+  alerta.style.opacity = '1';
+  setTimeout(() => { alerta.style.opacity = '0'; }, 5000);
 }
 
-function detenerTracking() {
-    if (seguimientoId !== null) {
-        navigator.geolocation.clearWatch(seguimientoId);
-        seguimientoId = null;
-    }
+function manejarErrorGeolocalizacion(error) {
+  switch (error.code) {
+    case error.PERMISSION_DENIED:
+      mostrarErrorGPS('Permiso de ubicación denegado. Actívalo en tu navegador.');
+      break;
+    case error.POSITION_UNAVAILABLE:
+      mostrarErrorGPS('Información de ubicación no disponible.');
+      break;
+    case error.TIMEOUT:
+      mostrarErrorGPS('La solicitud de ubicación expiró.');
+      break;
+    default:
+      mostrarErrorGPS('Error desconocido al obtener la ubicación.');
+      break;
+  }
+}
+
+function iniciarTracking() {
+  if (!navigator.geolocation) {
+    mostrarErrorGPS('Tu navegador no soporta geolocalización');
+    return;
+  }
+  if (seguimientoId !== null) return;
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => manejarPosicion(pos),
+    (error) => manejarErrorGeolocalizacion(error),
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+  );
+
+  seguimientoId = navigator.geolocation.watchPosition(
+    (pos) => manejarPosicion(pos),
+    (error) => manejarErrorGeolocalizacion(error),
+    { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
+  );
+}
+
+function detenerElSeguimiento() {
+  if (seguimientoId !== null) {
+    navigator.geolocation.clearWatch(seguimientoId);
+    seguimientoId = null;
+  }
+}
+
+function obtenerUbicacion(central) {
+  if (!navigator.geolocation) {
+    mostrarErrorGPS('Tu navegador no soporta geolocalización');
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      posActual = [pos.coords.latitude, pos.coords.longitude];
+      if (marcadorUsuario) {
+        marcadorUsuario.setLatLng(posActual);
+      } else if (mapa) {
+        marcadorUsuario = L.marker(posActual, { icon: iconoUsuario() })
+          .addTo(mapa)
+          .bindPopup('Estás aquí');
+      }
+
+      if (central && mapa) {
+        mapa.flyTo(posActual, 15);
+      }
+    },
+    (error) => manejarErrorGeolocalizacion(error),
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+  );
 }
 
 // Se ejecuta con CADA actualización del GPS
 function manejarPosicion(pos) {
-    posActual = [pos.coords.latitude, pos.coords.longitude];
+   // Filtro: si la imprecisión del GPS es mayor a 35 metros, ignoramos la lectura
+  if (pos.coords.accuracy && pos.coords.accuracy > 35) {
+    console.warn(`Lectura descartada por baja precisión (${Math.round(pos.coords.accuracy)}m)`);
+    return;
+  }
+
+  posActual = [pos.coords.latitude, pos.coords.longitude];
 
     // Mover (o crear) el marcador del usuario en el mapa
     if (mapa) {
@@ -337,19 +403,41 @@ function iniciarActividad(rutaIdx, tipo = 'trote') {
 }
 
 function detenerActividad() {
-    if (!actividad.activa) return;
-    const idx = actividad.rutaIdx;
-    clearInterval(actividad.interval);
-    actividad.interval = null;
-    actividad.activa = false;
+  if (!actividad.activa) return;
+  const idx = actividad.rutaIdx;
+  clearInterval(actividad.interval);
+  actividad.interval = null;
+  actividad.activa = false;
 
-    // Última actualización del panel y ocultarlo
-    actualizarPanelActividad();
-    hudPanel.classList.add('hud-hidden');
+  // Guardar la actividad finalizada en el historial de localStorage
+  guardarEnHistorial({
+    ruta: misRutas[idx] ? misRutas[idx].nombre : 'Ruta Libre',
+    tipo: actividad.tipo,
+    duracionSegundos: actividad.seconds,
+    distanciaMetros: distanciaTotal,
+    ritmo: ritmoMinPorKm(actividad.seconds, distanciaTotal),
+    fecha: new Date().toISOString()
+  });
 
-    refrescarPopup(idx);
-    console.info(`Actividad detenida → duración ${formatoTiempo(actividad.seconds)}`);
-    actividad.tipo = null;
+  // Última actualización del panel y ocultarlo
+  actualizarPanelActividad();
+  hudPanel.classList.add('hud-hidden');
+
+  refrescarPopup(idx);
+  console.info(`Actividad detenida -> duración ${formatoTiempo(actividad.seconds)}`);
+  actividad.tipo = null;
+}
+
+// Funciones para gestionar el almacenamiento persistente
+function guardarEnHistorial(sesion) {
+  const historial = obtenerHistorial();
+  historial.unshift(sesion);
+  localStorage.setItem('runwell-historial', JSON.stringify(historial));
+}
+
+function obtenerHistorial() {
+  const datos = localStorage.getItem('runwell-historial');
+  return datos ? JSON.parse(datos) : [];
 }
 
 function tickActividad() {
