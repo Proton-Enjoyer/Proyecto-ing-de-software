@@ -473,3 +473,34 @@ body.dark-mode .plane-card {
   background-color: #1e1e1e;
   border-color: #333333;
 }
+/* --- CORRECCIÓN DE TEXTO Y TARJETAS EN MODO OSCURO --- */
+
+/* Forzar que las tarjetas de eventos tomen el fondo y texto según el tema */
+body.dark-mode .event-card,
+body.dark-mode .planes-card,
+[data-theme="dark"] .event-card,
+[data-theme="dark"] .planes-card {
+    background-color: var(--card-bg, #1e1e1e) !important;
+    color: var(--text, #ffffff) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Asegurar legibilidad en títulos, párrafos y etiquetas dentro de eventos en modo oscuro */
+body.dark-mode .event-card h3,
+body.dark-mode .event-card p,
+body.dark-mode .planes-card h3,
+body.dark-mode .planes-card p,
+[data-theme="dark"] .event-card h3,
+[data-theme="dark"] .event-card p,
+[data-theme="dark"] .planes-card h3,
+[data-theme="dark"] .planes-card p {
+    color: #ffffff !important;
+}
+
+/* Ajuste del botón dentro de la tarjeta en modo oscuro */
+body.dark-mode .event-card button,
+[data-theme="dark"] .event-card button {
+    background-color: var(--primary, #ccff00);
+    color: #000000 !important;
+    font-weight: bold;
+}
