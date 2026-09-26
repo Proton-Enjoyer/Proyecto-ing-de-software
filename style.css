@@ -504,28 +504,36 @@ body.dark-mode .event-card button,
     color: #000000 !important;
     font-weight: bold;
 }
-/* --- CORRECCIÓN DEFINITIVA DE HISTORIAL EN MODO OSCURO --- */
+/* --- ESTILOS TARJETAS DE HISTORIAL (MODO CLARO Y OSCURO) --- */
+/* MODO CLARO (por defecto): Fondo blanco, bordes suaves y texto oscuro */
+.historial-grid > div,
+.historial-card,
+#historial-section .card {
+    background-color: #ffffff !important;
+    color: #111111 !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
 
-/* Fondo oscuro y borde para las tarjetas del historial */
-body.dark-mode .historial-card,
+.historial-grid > div *,
+.historial-card *,
+#historial-section .card * {
+    color: #111111 !important;
+}
+
+/* MODO OSCURO: Fondo oscuro y texto blanco */
 body.dark-mode .historial-grid > div,
+body.dark-mode .historial-card,
 body.dark-mode #historial-section .card,
-[data-theme="dark"] .historial-card,
 [data-theme="dark"] .historial-grid > div,
+[data-theme="dark"] .historial-card,
 [data-theme="dark"] #historial-section .card {
     background-color: #1e1e1e !important;
     border: 1px solid #333333 !important;
+    box-shadow: none !important;
 }
 
-/* Texto blanco obligatorio dentro de cualquier tarjeta del historial */
 body.dark-mode #historial-section *,
 [data-theme="dark"] #historial-section * {
     color: #ffffff !important;
-}
-
-/* Regla general por si las tarjetas tienen una clase genérica */
-.historial-grid > div, 
-.historial-card {
-    background-color: var(--card-bg, #1e1e1e);
-    color: var(--text, #ffffff);
 }
