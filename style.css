@@ -563,55 +563,41 @@ header, nav, .navbar {
     padding-right: 12px !important;
     overflow: hidden;
 }
-
-/* --- CORRECCIÓN DEFINITIVA DE NAVBAR MÓVIL Y SWITCH --- */
-
+/* Reducir espacio de la navegación en pantallas móviles */
 @media (max-width: 600px) {
-    .navbar, header nav {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        padding: 0 8px !important;
-        gap: 4px !important;
+    nav a, nav ul li {
+        font-size: 0.85rem !important;
+        margin: 0 4px !important;
     }
 
-    .nav-links, nav ul, nav div {
-        display: flex !important;
-        gap: 6px !important;
-    }
-
-    nav a, .nav-link {
-        font-size: 0.75rem !important;
-        padding: 2px 4px !important;
-    }
-
-    /* Mostrar y escalar el switch claro/oscuro */
-    .theme-switch, .theme-toggle, #theme-toggle, .switch {
-        display: inline-flex !important;
-        transform: scale(0.75) !important;
-        margin: 0 !important;
-    }
-
+    /* Asegurar que el botón Empezar sea visible y no se desborde */
     #hero-btn, .btn-empezar, header button {
-        padding: 5px 8px !important;
-        font-size: 0.72rem !important;
-        white-space: nowrap !important;
+        padding: 6px 12px !important;
+        font-size: 0.8rem !important;
     }
 
-    /* Posicionamiento de controles del mapa */
+    /* 2. Corregir el mapa y elevar el botón flotante de ubicacion (abajo a la izquierda) */
     #btn-ubicar, .locate-btn, #btnUbicar {
         bottom: 30px !important;
         left: 15px !important;
         z-index: 1001 !important;
     }
 
+    /* Elevar los controles de Zoom para que no estorben */
     .leaflet-bottom.leaflet-left {
         bottom: 25px !important;
     }
 
+    /* Botón X de cerrar mapa ajustado para no quedar tan al borde */
     #close-map, .close-btn, #btnCerrar {
         top: 15px !important;
         right: 15px !important;
         z-index: 1001 !important;
     }
+}
+
+/* Usar el alto dinámico real del navegador móvil (dvh) */
+#map-container.map-active {
+    height: 100dvh !important;
+    width: 100% !important;
 }
