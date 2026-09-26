@@ -776,3 +776,20 @@ if (borrarHistorialBtn) {
     }
   });
 }
+
+// --- SCRIPT PARA EL MENÚ DESPLEGABLE MÓVIL ---
+const menuToggle = document.getElementById('menuToggle');
+const navItems = document.getElementById('items');
+
+if (menuToggle && navItems) {
+    menuToggle.addEventListener('click', () => {
+        navItems.classList.toggle('active');
+    });
+
+    // Cerrar el menú automáticamente al hacer clic en cualquier enlace interno (Inicio, Eventos, Historial)
+    navItems.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            navItems.classList.remove('active');
+        });
+    });
+}
