@@ -15,6 +15,7 @@
             <ul id='items'>
                 <li><a href="#" id="inicio-btn">Inicio</a></li>
                 <li><a href="#" id="eventos-btn">Eventos</a></li>
+                <li><a href="#" id="historial-btn">Historial</a></li>
                 <li>
                     <label class="switch">
                         <input type="checkbox" id="theme-toggle">
@@ -38,6 +39,13 @@
                 <!-- Se llenará dinámicamente desde script.js -->
             </div>
         </section>
+        <section id="historial-section" class="planes-section hidden">
+    <h2>Historial de Actividades</h2>
+    <div id="historial-lista" class="historial-grid"></div>
+    <div style="text-align: center; margin-top: 1.5rem;">
+      <button id="borrar-historial-btn" class="hidden">Limpiar Historial</button>
+    </div>
+  </section>
     </main>
     
     <!-- Añade esto después del </main> -->
