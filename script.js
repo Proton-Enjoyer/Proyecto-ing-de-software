@@ -614,6 +614,7 @@ btnVerRutas.addEventListener('click', () => abrirMapa());
 btnCerrar.addEventListener('click', () => {
     guardarActividad('Carrera', 'Ruta Perímetro LUZ', hudTime?.textContent || '00:00', hudDist?.textContent || '0.00', hudRitmo?.textContent || '--:--');
     mapContainer.classList.remove('map-active');
+    if (heroSection) heroSection.classList.remove('hidden');
 });
 
 // Botón para centrar el mapa en la ubicación del usuario
