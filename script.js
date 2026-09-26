@@ -494,27 +494,39 @@ function refrescarTraza() {
 
 // 4. Abrir mapa y dibujar rutas
 function abrirMapa(rutaIndex = null) {
-    mapContainer.classList.add('map-active');
+  // Asegurar que el viewport no quede desplazado en teléfonos
+  window.scrollTo(0, 0);
 
-    // Inicializar mapa solo la primera vez
-    if (!mapa) {
-        // Centro en la Facultad Experimental de Ciencias, LUZ
-        mapa = L.map('map').setView([10.686, -71.645], 15);
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
+  if (heroSection) heroSection.classList.add('hidden');
+  if (eventosSection) eventosSection.classList.add('hidden');
+  if (mapContainer) mapContainer.classList.add('map-active');
+
+  // Inicializar mapa solo la primera vez
+  if (!mapa) {
+    // Centro en la Facultad Experimental de Ciencias, LUZ
+    mapa = L.map('map').setView([10.686, -71.645], 15);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapa);
+  }
+
+  // Limpiar capas previas
+  mapa.eachLayer((layer) => {
+    if (layer instanceof L.Polyline || layer instanceof L.Marker) {
+      mapa.removeLayer(layer);
     }
+  });
 
-    // Limpiar capas previas
-    mapa.eachLayer((layer) => {
-        if (layer instanceof L.Polyline || layer instanceof L.Marker) {
-            mapa.removeLayer(layer);
-        }
-    });
-    // FIX: esos marcadores ya no están en el mapa, así que reiniciamos las
-    // referencias. Si no, manejarPosicion() movería marcadores "fantasma"
-    // y el punto azul del usuario desaparecía al reabrir el mapa.
-    userMarker = null;
-    trazaLinea = null;
-    popupsRuta = {};
+  userMarker = null;
+  trazaLinea = null;
+  popupsRuta = {};
+
+  // Forzar recálculo del lienzo de Leaflet para evitar descuadres en móviles
+  setTimeout(() => {
+    mapa.invalidateSize();
+    if (rutaIndex !== null && misRutas[rutaIndex]) {
+      const coordInicio = misRutas[rutaIndex].coords[0];
+      mapa.flyTo(coordInicio, 16);
+    }
+  }, 200);
 
     // Dibujar rutas y ajustar vista
     const allCoords = [];
