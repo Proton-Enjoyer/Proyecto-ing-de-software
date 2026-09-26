@@ -552,3 +552,53 @@ body.dark-mode #historial-section *,
 [data-theme="dark"] #historial-section * {
     color: #ffffff !important;
 }
+
+/* --- CORRECCIÓN DE LAYOUT MÓVIL (NAVBAR Y MAPA) --- */
+
+/* 1. Ajuste del Header/Navbar para que no se corte a la derecha */
+header, nav, .navbar {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    overflow: hidden;
+}
+
+/* Reducir espacio de la navegación en pantallas móviles */
+@media (max-width: 600px) {
+    nav a, nav ul li {
+        font-size: 0.85rem !important;
+        margin: 0 4px !important;
+    }
+
+    /* Asegurar que el botón Empezar sea visible y no se desborde */
+    #hero-btn, .btn-empezar, header button {
+        padding: 6px 12px !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* 2. Corregir el mapa y elevar el botón flotante de ubicacion (abajo a la izquierda) */
+    #btn-ubicar, .locate-btn, #btnUbicar {
+        bottom: 30px !important;
+        left: 15px !important;
+        z-index: 1001 !important;
+    }
+
+    /* Elevar los controles de Zoom para que no estorben */
+    .leaflet-bottom.leaflet-left {
+        bottom: 25px !important;
+    }
+
+    /* Botón X de cerrar mapa ajustado para no quedar tan al borde */
+    #close-map, .close-btn, #btnCerrar {
+        top: 15px !important;
+        right: 15px !important;
+        z-index: 1001 !important;
+    }
+}
+
+/* Usar el alto dinámico real del navegador móvil (dvh) */
+#map-container.map-active {
+    height: 100dvh !important;
+    width: 100% !important;
+}
