@@ -415,3 +415,21 @@ button:hover { transform: scale(1.1); }
         font-size: 0.55rem;
     }
 }
+
+/* Prevenir desbordamiento horizontal y scroll en dispositivos móviles */
+html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+/* Forzar que el contenedor del mapa ocupe exactamente la pantalla visible */
+#map-container.map-active {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+}
