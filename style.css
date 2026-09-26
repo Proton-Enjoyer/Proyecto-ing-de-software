@@ -380,3 +380,38 @@ button:hover { transform: scale(1.1); }
     letter-spacing: 0.5px;
     opacity: 0.7;
 }
+
+/* --- MEJORAS DE UX/UI --- */
+/* Mover los controles de Zoom de Leaflet para evitar que los tape el HUD */
+.leaflet-top.leaflet-left {
+    top: 70px;
+}
+
+/* Estilos de los popups en el mapa */
+.leaflet-popup-content-wrapper {
+    background-color: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--primary);
+    border-radius: 12px;
+}
+
+.leaflet-popup-tip {
+    background-color: var(--bg);
+}
+
+/* Ajuste para pantallas móviles */
+@media (max-width: 600px) {
+    #hud-actividad {
+        width: 90vw;
+        padding: 8px 12px;
+        gap: 10px;
+    }
+
+    .hud-valor {
+        font-size: 1.1rem;
+    }
+
+    .hud-label {
+        font-size: 0.55rem;
+    }
+}
