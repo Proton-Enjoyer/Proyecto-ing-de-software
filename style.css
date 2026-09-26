@@ -504,12 +504,13 @@ body.dark-mode .event-card button,
     color: #000000 !important;
     font-weight: bold;
 }
-/* --- ESTILOS UNIFICADOS DE HISTORIAL (ESTILO EVENTOS) --- */
+/* --- ESTILOS UNIFICADOS DE HISTORIAL --- */
 
-/* MODO CLARO: Fondo blanco con borde oscuro */
+/* MODO CLARO */
 .historial-grid > div,
 .historial-card,
-#historial-section .card {
+#historial-section .card,
+.plane-card {
     background-color: #ffffff !important;
     color: #000000 !important;
     border: 1.5px solid #000000 !important;
@@ -520,17 +521,24 @@ body.dark-mode .event-card button,
 
 .historial-grid > div *,
 .historial-card *,
-#historial-section .card * {
+#historial-section .card *,
+.plane-card * {
     color: #000000 !important;
 }
 
-/* MODO OSCURO: Fondo oscuro/transparente con borde blanco (IGUAL A EVENTOS) */
+/* MODO OSCURO (Soporta .dark-theme) */
+.dark-theme .historial-grid > div,
+.dark-theme .historial-card,
+.dark-theme #historial-section .card,
+.dark-theme .plane-card,
 body.dark-mode .historial-grid > div,
 body.dark-mode .historial-card,
 body.dark-mode #historial-section .card,
+body.dark-mode .plane-card,
 [data-theme="dark"] .historial-grid > div,
 [data-theme="dark"] .historial-card,
-[data-theme="dark"] #historial-section .card {
+[data-theme="dark"] #historial-section .card,
+[data-theme="dark"] .plane-card {
     background-color: #121212 !important;
     color: #ffffff !important;
     border: 1.5px solid #ffffff !important;
@@ -538,6 +546,8 @@ body.dark-mode #historial-section .card,
     box-shadow: none !important;
 }
 
+.dark-theme #historial-section *,
+.dark-theme .historial-grid *,
 body.dark-mode #historial-section *,
 [data-theme="dark"] #historial-section * {
     color: #ffffff !important;
