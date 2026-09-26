@@ -612,6 +612,7 @@ function abrirMapa(rutaIndex = null) {
 btnVerRutas.addEventListener('click', () => abrirMapa());
 
 btnCerrar.addEventListener('click', () => {
+    guardarActividad('Carrera', 'Ruta Perímetro LUZ', hudTime?.textContent || '00:00', hudDist?.textContent || '0.00', hudRitmo?.textContent || '--:--');
     mapContainer.classList.remove('map-active');
 });
 
@@ -671,6 +672,7 @@ btnInicio.addEventListener('click', (e) => {
     heroSection.classList.remove('hidden');
     heroSection.classList.add('fade-in');
     eventosSection.classList.add('hidden');
+    if (historialSection) historialSection.classList.add('hidden');
     mapContainer.classList.remove('map-active');
 });
 
