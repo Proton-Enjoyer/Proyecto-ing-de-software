@@ -662,3 +662,11 @@ header, nav, .navbar {
         padding: 5px 10px;
     }
 }
+
+/* Marcador de ruta con actividad en curso (verde) */
+.custom-marker.activo {
+    background-color: #2ecc71 !important; /* Verde brillante */
+    border: 2px solid #ffffff !important;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.8);
+    transform: scale(1.2); /* Un poco más grande para que destaque */
+}
