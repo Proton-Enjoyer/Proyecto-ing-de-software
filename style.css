@@ -626,31 +626,36 @@ header, nav, .navbar {
     transition: all 0.3s ease;
 }
 
-/* --- CORRECCIÓN Y TAMAÑO DEL MENÚ MÓVIL --- */
+/* --- ESTILOS COMPLETOS DEL MENÚ MÓVIL --- */
 @media (max-width: 768px) {
-    /* Hacer la barra desplegable más grande, espaciosa y con fondo sólido para que no transparente el texto */
+    /* 1. Mostrar el botón de las 3 líneas en el teléfono */
+    .menu-toggle {
+        display: flex !important;
+    }
+
+    /* 2. Estilo de la barra desplegable grande y con fondo sólido */
     nav ul.nav-links, nav ul#items {
         position: absolute;
         top: 70px;
         left: 0;
         width: 100%;
-        background-color: var(--bg) !important; /* Fondo sólido según el tema claro u oscuro */
+        background-color: var(--bg) !important;
         flex-direction: column;
         align-items: center;
-        padding: 30px 0; /* Más espacio arriba y abajo */
-        gap: 20px; /* Más separación entre cada opción */
-        box-shadow: 0 15px 25px rgba(0,0,0,0.5); /* Sombra más marcada */
-        border-bottom: 2px solid var(--primary); /* Línea inferior destacada */
-        z-index: 999; /* Asegurar que quede por encima de todo */
+        padding: 30px 0;
+        gap: 20px;
+        box-shadow: 0 15px 25px rgba(0,0,0,0.5);
+        border-bottom: 2px solid var(--primary);
+        z-index: 999;
         display: none !important; 
     }
 
-    /* Mostrar el menú cuando esté activo */
+    /* 3. Mostrar el menú cuando JavaScript active la clase */
     nav ul.nav-links.active, nav ul#items.active {
         display: flex !important;
     }
 
-    /* Aumentar un poco el tamaño de los enlaces dentro del menú para que se vean mejor */
+    /* 4. Tamaño cómodo para los enlaces del menú */
     nav ul#items li a {
         font-size: 1.15rem;
         font-weight: 600;
