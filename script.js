@@ -692,3 +692,84 @@ btnTheme.addEventListener('change', () => {
 
 // 10. Arrancar el seguimiento de ubicación (esto dispara la detección de rutas)
 iniciarTracking();
+
+// --- ELEMENTOS Y NAVEGACIÓN DEL HISTORIAL ---
+const historialSection = document.getElementById('historial-section');
+const historialLista = document.getElementById('historial-lista');
+const borrarHistorialBtn = document.getElementById('borrar-historial-btn');
+const historialBtn = document.getElementById('historial-btn');
+
+// Manejo de clic en la pestaña Historial
+if (historialBtn) {
+  historialBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (typeof heroSection !== 'undefined' && heroSection) heroSection.classList.add('hidden');
+    if (typeof eventosSection !== 'undefined' && eventosSection) eventosSection.classList.add('hidden');
+    if (typeof mapContainer !== 'undefined' && mapContainer) mapContainer.classList.remove('map-active');
+    if (historialSection) historialSection.classList.remove('hidden');
+    renderizarHistorial();
+  });
+}
+
+// Obtener registros guardados
+function obtenerHistorial() {
+  const data = localStorage.getItem('runwell_historial');
+  return data ? JSON.parse(data) : [];
+}
+
+// Guardar una nueva actividad
+function guardarActividad(tipo, rutaNombre, tiempoStr, distanciaKm, ritmoStr) {
+  const historial = obtenerHistorial();
+  const nuevaActividad = {
+    id: Date.now(),
+    tipo: tipo || 'Carrera',
+    ruta: rutaNombre || 'Ruta Perímetro LUZ',
+    fecha: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    tiempo: tiempoStr || '00:00',
+    distancia: distanciaKm || '0.00',
+    ritmo: ritmoStr || '--:--'
+  };
+
+  historial.unshift(nuevaActividad);
+  localStorage.setItem('runwell_historial', JSON.stringify(historial));
+}
+
+// Mostrar las tarjetas en la sección Historial
+function renderizarHistorial() {
+  if (!historialLista) return;
+  const historial = obtenerHistorial();
+  historialLista.innerHTML = '';
+
+  if (historial.length === 0) {
+    historialLista.innerHTML = '<p style="text-align:center; grid-column:1/-1; opacity:0.7;">Aún no tienes actividades registradas.</p>';
+    if (borrarHistorialBtn) borrarHistorialBtn.classList.add('hidden');
+    return;
+  }
+
+  if (borrarHistorialBtn) borrarHistorialBtn.classList.remove('hidden');
+
+  historial.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'plane-card';
+    card.innerHTML = `
+      <h3>${item.tipo} - ${item.ruta}</h3>
+      <p style="font-size:0.85rem; opacity:0.8;">${item.fecha}</p>
+      <div style="display:flex; justify-content:space-around; margin-top:1rem; text-align:center;">
+        <div><strong>${item.tiempo}</strong><br><small>Tiempo</small></div>
+        <div><strong>${item.distancia} km</strong><br><small>Distancia</small></div>
+        <div><strong>${item.ritmo}</strong><br><small>Ritmo</small></div>
+      </div>
+    `;
+    historialLista.appendChild(card);
+  });
+}
+
+// Borrar historial
+if (borrarHistorialBtn) {
+  borrarHistorialBtn.addEventListener('click', () => {
+    if (confirm('¿Deseas borrar todo el historial?')) {
+      localStorage.removeItem('runwell_historial');
+      renderizarHistorial();
+    }
+  });
+}
