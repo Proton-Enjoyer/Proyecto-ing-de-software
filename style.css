@@ -626,32 +626,34 @@ header, nav, .navbar {
     transition: all 0.3s ease;
 }
 
-/* Comportamiento cuando la pantalla es pequeña (Celulares < 768px) */
+/* --- CORRECCIÓN Y TAMAÑO DEL MENÚ MÓVIL --- */
 @media (max-width: 768px) {
-    .menu-toggle {
-        display: flex; /* Muestra el botón de 3 líneas en el teléfono */
-    }
-
-    /* Transformar la lista de navegación en un menú desplegable */
+    /* Hacer la barra desplegable más grande, espaciosa y con fondo sólido para que no transparente el texto */
     nav ul.nav-links, nav ul#items {
         position: absolute;
         top: 70px;
         left: 0;
         width: 100%;
-        background-color: var(--bg);
+        background-color: var(--bg) !important; /* Fondo sólido según el tema claro u oscuro */
         flex-direction: column;
         align-items: center;
-        padding: 20px 0;
-        gap: 15px;
-        box-shadow: 0 10px 15px rgba(0,0,0,0.3);
-        border-bottom: 1px solid var(--text);
-        
-        /* Oculto por defecto hasta que se haga clic */
+        padding: 30px 0; /* Más espacio arriba y abajo */
+        gap: 20px; /* Más separación entre cada opción */
+        box-shadow: 0 15px 25px rgba(0,0,0,0.5); /* Sombra más marcada */
+        border-bottom: 2px solid var(--primary); /* Línea inferior destacada */
+        z-index: 999; /* Asegurar que quede por encima de todo */
         display: none !important; 
     }
 
-    /* Clase que activará JavaScript para mostrar el menú desplegado */
+    /* Mostrar el menú cuando esté activo */
     nav ul.nav-links.active, nav ul#items.active {
         display: flex !important;
+    }
+
+    /* Aumentar un poco el tamaño de los enlaces dentro del menú para que se vean mejor */
+    nav ul#items li a {
+        font-size: 1.15rem;
+        font-weight: 600;
+        padding: 5px 10px;
     }
 }
