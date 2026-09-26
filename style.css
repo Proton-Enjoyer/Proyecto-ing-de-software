@@ -601,3 +601,57 @@ header, nav, .navbar {
     height: 100dvh !important;
     width: 100% !important;
 }
+
+/* --- ESTILOS DEL MENÚ MÓVIL (HAMBURGUESA) --- */
+
+/* Ocultar el botón de 3 líneas en pantallas grandes (PC) */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 21px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 100;
+}
+
+.menu-toggle span {
+    width: 100%;
+    height: 3px;
+    background-color: var(--text);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* Comportamiento cuando la pantalla es pequeña (Celulares < 768px) */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: flex; /* Muestra el botón de 3 líneas en el teléfono */
+    }
+
+    /* Transformar la lista de navegación en un menú desplegable */
+    nav ul.nav-links, nav ul#items {
+        position: absolute;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        background-color: var(--bg);
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+        gap: 15px;
+        box-shadow: 0 10px 15px rgba(0,0,0,0.3);
+        border-bottom: 1px solid var(--text);
+        
+        /* Oculto por defecto hasta que se haga clic */
+        display: none !important; 
+    }
+
+    /* Clase que activará JavaScript para mostrar el menú desplegado */
+    nav ul.nav-links.active, nav ul#items.active {
+        display: flex !important;
+    }
+}
