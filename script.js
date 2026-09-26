@@ -629,9 +629,25 @@ btnEventos.addEventListener('click', (e) => {
             <h3>${ruta.nombre}</h3>
             <p>${ruta.plan.dia} - ${ruta.plan.hora}</p>
         `;
-        const btnUnirse = document.createElement('button');
-        btnUnirse.innerText = "Unirse";
-        btnUnirse.addEventListener('click', () => abrirMapa(index));
+const btnUnirse = document.createElement('button');
+btnUnirse.innerText = "Ver Ruta en Mapa";
+btnUnirse.addEventListener('click', () => {
+  abrirMapa(index);
+
+  if (misRutas[index] && mapa) {
+    const coordInicio = misRutas[index].coords[0];
+    mapa.flyTo(coordInicio, 16);
+
+    setTimeout(() => {
+      if (ventanasEmergentesRuta[index]) {
+        L.popup()
+          .setLatLng(coordInicio)
+          .setContent(ventanasEmergentesRuta[index])
+          .openOn(mapa);
+      }
+    }, 400);
+  }
+});
         card.appendChild(btnUnirse);
         eventosGrid.appendChild(card);
     });
