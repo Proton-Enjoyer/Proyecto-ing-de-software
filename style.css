@@ -504,3 +504,28 @@ body.dark-mode .event-card button,
     color: #000000 !important;
     font-weight: bold;
 }
+/* --- CORRECCIÓN DEFINITIVA DE HISTORIAL EN MODO OSCURO --- */
+
+/* Fondo oscuro y borde para las tarjetas del historial */
+body.dark-mode .historial-card,
+body.dark-mode .historial-grid > div,
+body.dark-mode #historial-section .card,
+[data-theme="dark"] .historial-card,
+[data-theme="dark"] .historial-grid > div,
+[data-theme="dark"] #historial-section .card {
+    background-color: #1e1e1e !important;
+    border: 1px solid #333333 !important;
+}
+
+/* Texto blanco obligatorio dentro de cualquier tarjeta del historial */
+body.dark-mode #historial-section *,
+[data-theme="dark"] #historial-section * {
+    color: #ffffff !important;
+}
+
+/* Regla general por si las tarjetas tienen una clase genérica */
+.historial-grid > div, 
+.historial-card {
+    background-color: var(--card-bg, #1e1e1e);
+    color: var(--text, #ffffff);
+}
