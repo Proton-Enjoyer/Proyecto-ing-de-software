@@ -1,0 +1,273 @@
+/* RunWell — mapa, marcadores, popups, prompt de proximidad y panel HUD */
+
+#map-container.map-active {
+    display: block;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 1000;
+    background-color: var(--bg);
+}
+#map { width: 100%; height: 100%; }
+
+/* Estilo moderno para el botón cerrar */
+#close-map {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1001;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--primary);
+    color: var(--text);
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: transform 0.2s;
+    font-size: 20px;
+}
+
+#close-map:hover { transform: scale(1.1); }
+
+/* Botón para centrar en la ubicación del usuario */
+#locate-btn {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1001;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--primary);
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: transform 0.2s;
+}
+
+#locate-btn:hover { transform: scale(1.1); }
+
+/* Marcadores personalizados */
+.custom-marker {
+    background-color: var(--primary);
+    border: 2px solid var(--text);
+    border-radius: 50%;
+    width: 15px !important;
+    height: 15px !important;
+}
+
+/* Marcador de la ubicación del usuario */
+.user-marker {
+    background-color: #4285F4;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(66, 133, 244, 0.7);
+    width: 20px !important;
+    height: 20px !important;
+}
+
+/* Estilo del cronómetro dentro del popup */
+#timer-display {
+    margin-top: 10px;
+    padding: 10px;
+    background: var(--bg);
+    border: 1px solid var(--text);
+    text-align: center;
+    border-radius: 10px;
+}
+
+.popup-btn {
+    margin-top: 5px;
+    width: 100%;
+    cursor: pointer;
+    background-color: var(--primary);
+    border: none;
+    padding: 5px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+/* --- PROMPT DE PROXIMIDAD (detección de ruta cercana) --- */
+.proximity-hidden { display: none !important; }
+
+#proximity-prompt {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    z-index: 1200;
+    width: min(92vw, 360px);
+    padding: 18px 20px;
+    background-color: var(--bg);
+    color: var(--text);
+    border: 2px solid var(--primary);
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+    text-align: center;
+    animation: fadeIn 0.35s ease-out;
+}
+
+.pp-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text);
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.pp-title {
+    margin: 0 24px 4px 0;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.pp-dist {
+    margin: 0 0 6px;
+    font-size: 0.85rem;
+    opacity: 0.75;
+}
+
+.pp-sub {
+    margin: 8px 0 12px;
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+.pp-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.pp-btn {
+    flex: 1;
+    padding: 12px 10px;
+    font-size: 0.95rem;
+    background-color: var(--primary);
+    color: #121212;
+}
+
+.pp-btn-alt {
+    background-color: var(--text);
+    color: var(--bg);
+}
+
+.pp-ignore {
+    margin-top: 10px;
+    padding: 8px 16px;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--text);
+    font-size: 0.85rem;
+    font-weight: normal;
+    opacity: 0.8;
+}
+
+/* Etiqueta del tipo de actividad dentro del popup */
+.popup-tipo {
+    display: inline-block;
+    margin-bottom: 6px;
+    padding: 2px 10px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    border-radius: 20px;
+    background-color: var(--primary);
+    color: #121212;
+}
+
+/* --- PANEL EN VIVO DE LA ACTIVIDAD (distancia y ritmo) --- */
+.hud-hidden { display: none !important; }
+
+#hud-actividad {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050;
+    display: flex;
+    gap: 18px;
+    padding: 10px 18px;
+    background-color: var(--bg);
+    color: var(--text);
+    border: 2px solid var(--primary);
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.hud-cell {
+    display: flex;
+    flex-direction: column;
+    min-width: 64px;
+}
+
+.hud-valor {
+    font-size: 1.3rem;
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+
+.hud-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.7;
+}
+
+/* --- MEJORAS DE UX/UI --- */
+/* Mover los controles de Zoom de Leaflet para evitar que los tape el HUD */
+.leaflet-top.leaflet-left {
+    top: 70px;
+}
+
+/* Estilos de los popups en el mapa */
+.leaflet-popup-content-wrapper {
+    background-color: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--primary);
+    border-radius: 12px;
+}
+
+.leaflet-popup-tip {
+    background-color: var(--bg);
+}
+
+/* Forzar que el contenedor del mapa ocupe exactamente la pantalla visible */
+#map-container.map-active {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1000;
+}
+/* Usar el alto dinámico real del navegador móvil (dvh) */
+#map-container.map-active {
+    height: 100dvh !important;
+    width: 100% !important;
+}
+/* Marcador de ruta con actividad en curso (verde) */
+.custom-marker.activo {
+    background-color: #2ecc71 !important; /* Verde brillante */
+    border: 2px solid #ffffff !important;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.8);
+    transform: scale(1.2); /* Un poco más grande para que destaque */
+}

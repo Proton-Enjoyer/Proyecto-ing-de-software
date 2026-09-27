@@ -1,0 +1,96 @@
+/* RunWell — media queries: móvil, navbar y menú desplegable */
+
+/* Ajuste para pantallas móviles */
+@media (max-width: 600px) {
+    #hud-actividad {
+        width: 90vw;
+        padding: 8px 12px;
+        gap: 10px;
+    }
+
+    .hud-valor {
+        font-size: 1.1rem;
+    }
+
+    .hud-label {
+        font-size: 0.55rem;
+    }
+}
+/* --- CORRECCIÓN DE LAYOUT MÓVIL (NAVBAR Y MAPA) --- */
+
+/* 1. Ajuste del Header/Navbar para que no se corte a la derecha */
+header, nav, .navbar {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    overflow: hidden;
+}
+/* Reducir espacio de la navegación en pantallas móviles */
+@media (max-width: 600px) {
+    nav a, nav ul li {
+        font-size: 0.85rem !important;
+        margin: 0 4px !important;
+    }
+
+    /* Asegurar que el botón Empezar sea visible y no se desborde */
+    #hero-btn, .btn-empezar, header button {
+        padding: 6px 12px !important;
+        font-size: 0.8rem !important;
+    }
+
+    /* 2. Corregir el mapa y elevar el botón flotante de ubicacion (abajo a la izquierda) */
+    #btn-ubicar, .locate-btn, #btnUbicar {
+        bottom: 30px !important;
+        left: 15px !important;
+        z-index: 1001 !important;
+    }
+
+    /* Elevar los controles de Zoom para que no estorben */
+    .leaflet-bottom.leaflet-left {
+        bottom: 25px !important;
+    }
+
+    /* Botón X de cerrar mapa ajustado para no quedar tan al borde */
+    #close-map, .close-btn, #btnCerrar {
+        top: 15px !important;
+        right: 15px !important;
+        z-index: 1001 !important;
+    }
+}
+/* --- ESTILOS COMPLETOS DEL MENÚ MÓVIL --- */
+@media (max-width: 768px) {
+    /* 1. Mostrar el botón de las 3 líneas en el teléfono */
+    .menu-toggle {
+        display: flex !important;
+    }
+
+    /* 2. Estilo de la barra desplegable grande y con fondo sólido */
+    nav ul.nav-links, nav ul#items {
+        position: absolute;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        background-color: var(--bg) !important;
+        flex-direction: column;
+        align-items: center;
+        padding: 30px 0;
+        gap: 20px;
+        box-shadow: 0 15px 25px rgba(0,0,0,0.5);
+        border-bottom: 2px solid var(--primary);
+        z-index: 999;
+        display: none !important; 
+    }
+
+    /* 3. Mostrar el menú cuando JavaScript active la clase */
+    nav ul.nav-links.active, nav ul#items.active {
+        display: flex !important;
+    }
+
+    /* 4. Tamaño cómodo para los enlaces del menú */
+    nav ul#items li a {
+        font-size: 1.15rem;
+        font-weight: 600;
+        padding: 5px 10px;
+    }
+}

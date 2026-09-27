@@ -1,0 +1,113 @@
+/* RunWell — layout base: nav, hero, botones, switch de tema, menú hamburguesa */
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 2rem 5%;
+    align-items: center;
+}
+
+nav ul { display: flex; list-style: none; gap: 2rem; align-items: center; }
+
+.logo {
+    color: var(--text);
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.hero {
+    text-align: center;
+    padding: 100px 20px;
+    display: block !important;
+}
+
+h1 { font-size: 4rem; margin-bottom: 1rem; }
+
+a {  
+  text-decoration: none;
+  color: var(--text);
+}
+
+button {
+    background-color: var(--primary);
+    color: #121212;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.3s ease;
+}
+
+#planes-btn {
+    background-color: var(--bg);
+}
+
+button:hover { transform: scale(1.1); }
+.map-hidden { display: none; }
+
+/* Clase para ocultar elementos */
+.hidden { display: none !important; }
+/* Toggle Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.switch input { display: none; }
+
+.slider {
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; bottom: 0;
+    background-color: #ccc;
+    border-radius: 24px;
+    transition: 0.3s;
+}
+
+.slider::before {
+    content: "";
+    position: absolute;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.switch input:checked + .slider {
+    background-color: var(--primary);
+}
+
+.switch input:checked + .slider::before {
+    transform: translateX(20px);
+}
+/* --- ESTILOS DEL MENÚ MÓVIL (HAMBURGUESA) --- */
+
+/* Ocultar el botón de 3 líneas en pantallas grandes (PC) */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 21px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 100;
+}
+
+.menu-toggle span {
+    width: 100%;
+    height: 3px;
+    background-color: var(--text);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
