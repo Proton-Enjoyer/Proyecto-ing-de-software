@@ -65,6 +65,32 @@ function iconoUsuario() {
     return estado.userIcon;
 }
 
+function iconoUsuario() {
+    let avatarUrl = "https://via.placeholder.com/40";
+    const avatarImgNavbar = document.getElementById('user-avatar-img');
+    
+    if (avatarImgNavbar && avatarImgNavbar.src && avatarImgNavbar.src !== "" && !avatarImgNavbar.src.includes('placeholder')) {
+        avatarUrl = avatarImgNavbar.src;
+    }
+
+    return L.divIcon({
+        className: 'user-avatar-marker',
+        html: `<div style="
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            overflow: hidden; 
+            border: 3px solid var(--primary, #007bff); 
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            background: white;
+            transform: translate(-50%, -50%);
+        ">
+            <img src="${avatarUrl}" style="width: 100%; height: 100%; object-fit: cover;" />
+        </div>`,
+        iconSize: [40, 40],
+        iconAnchor: [20, 20]
+    });
+}
 // Crea o mueve el marcador azul del usuario (compartido por el seguimiento
 // continuo y por el botón 📍; antes estaba duplicado en ambas funciones).
 // El popup muestra coordenadas y precisión para poder diagnosticar a simple
