@@ -54,12 +54,18 @@ function manejarErrorGeolocalizacion(error) {
 }
 
 function iconoUsuario() {
-    let avatarUrl = "https://via.placeholder.com/40";
+    let avatarUrl = "";
     const avatarImgNavbar = document.getElementById('user-avatar-img');
     
     if (avatarImgNavbar && avatarImgNavbar.src && avatarImgNavbar.src !== "" && !avatarImgNavbar.src.includes('placeholder')) {
         avatarUrl = avatarImgNavbar.src;
     }
+
+    // Si hay una foto válida, mostramos la imagen; si no, mostramos un círculo elegante con una letra/ícono por defecto
+    const contenidoInterno = avatarUrl 
+        ? `<img src="${avatarUrl}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+           <div style="display: none; width: 100%; height: 100%; align-items: center; justify-content: center; background: var(--primary, #007bff); color: white; font-weight: bold; font-size: 16px;">👤</div>`
+        : `<div style="display: flex; width: 100%; height: 100%; align-items: center; justify-content: center; background: var(--primary, #007bff); color: white; font-weight: bold; font-size: 16px;">👤</div>`;
 
     return L.divIcon({
         className: 'user-avatar-marker',
@@ -73,7 +79,7 @@ function iconoUsuario() {
             background: white;
             transform: translate(-50%, -50%);
         ">
-            <img src="${avatarUrl}" style="width: 100%; height: 100%; object-fit: cover;" />
+            ${contenidoInterno}
         </div>`,
         iconSize: [40, 40],
         iconAnchor: [20, 20]
