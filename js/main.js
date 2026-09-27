@@ -13,7 +13,7 @@ import { renderizarHistorial, iniciarHistorial } from './historial.js';
 import { iniciarTema } from './tema.js';
 import { iniciarAutenticacion } from './auth.js';
 import { iniciarLogs } from './logs.js';
-
+import { inicializarChatbot } from './chatbot.js';
 // Iniciar actividad desde el prompt de proximidad (abre esa ruta y arranca)
 function iniciarDesdePrompt(tipo) {
     const idx = estado.rutaDetectada;
@@ -71,3 +71,4 @@ iniciarTema();
 iniciarHistorial();
 iniciarTracking(); // esto dispara la detección de rutas
 iniciarAutenticacion();
+inicializarChatbot();
