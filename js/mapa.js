@@ -48,13 +48,6 @@ export function abrirMapa(rutaIndex = null) {
     // Dibujar rutas y ajustar vista
     const allCoords = [];
 
-    // Marcadores personalizados con CSS
-    const markerStyle = L.divIcon({
-        className: 'custom-marker',
-        iconSize: [15, 15],
-        iconAnchor: [7, 7]
-    });
-
     const rutasAProcesar = rutaIndex !== null ? [misRutas[rutaIndex]] : misRutas;
 
     rutasAProcesar.forEach((ruta, idx) => {
@@ -70,6 +63,14 @@ export function abrirMapa(rutaIndex = null) {
         allCoords.push(...ruta.coords);
 
         const currentIdx = rutaIndex !== null ? rutaIndex : idx;
+
+        const estaActiva = estado.actividad && estado.actividad.activa && estado.actividad.rutaIdx === currentIdx;
+
+    const markerStyle = L.divIcon({
+        className: estaActiva ? 'custom-marker activo' : 'custom-marker',
+        iconSize: [15, 15],
+        iconAnchor: [7, 7]
+    });
 
         // Contenido del popup: elegir tipo o ver el cronómetro
         const popupContent = document.createElement('div');
