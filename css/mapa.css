@@ -96,6 +96,9 @@
 
 #alerta-gps.oculta { opacity: 0; }
 
+/* Variante informativa (coordenadas/precisión al pulsar 📍): no es un error */
+#alerta-gps.info { background: #2563eb; }
+
 .popup-btn {
     margin-top: 5px;
     width: 100%;

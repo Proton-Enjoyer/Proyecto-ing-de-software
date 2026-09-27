@@ -4,9 +4,9 @@ import { estado } from './estado.js';
 import { evaluarProximidad } from './proximidad.js';
 import { registrarPunto } from './actividad.js';
 
-// Muestra una alerta visual si falla el GPS
+// Alerta visual del GPS: error en rojo, información (coordenadas) en azul
 // (los estilos viven en css/mapa.css, no en JS)
-export function mostrarErrorGPS(mensaje) {
+function mostrarAlertaGPS(mensaje, esInfo) {
     let alerta = document.getElementById('alerta-gps');
     if (!alerta) {
         alerta = document.createElement('div');
@@ -14,8 +14,20 @@ export function mostrarErrorGPS(mensaje) {
         document.body.appendChild(alerta);
     }
     alerta.textContent = mensaje;
+    alerta.classList.toggle('info', !!esInfo);
     alerta.classList.remove('oculta');
-    setTimeout(() => { alerta.classList.add('oculta'); }, 5000);
+    clearTimeout(alerta._ocultar);
+    alerta._ocultar = setTimeout(() => { alerta.classList.add('oculta'); }, 5000);
+}
+
+export function mostrarErrorGPS(mensaje) {
+    mostrarAlertaGPS(mensaje, false);
+}
+
+// Lo que reportó el navegador (coordenadas/precisión): no es un error,
+// pero el usuario lo pidió al pulsar 📍 y sirve para diagnosticar
+function mostrarInfoGPS(mensaje) {
+    mostrarAlertaGPS(mensaje, true);
 }
 
 // Detalle técnico del navegador, para poder diagnosticar fallos remotos
@@ -54,15 +66,23 @@ function iconoUsuario() {
 }
 
 // Crea o mueve el marcador azul del usuario (compartido por el seguimiento
-// continuo y por el botón 📍; antes estaba duplicado en ambas funciones)
-function actualizarMarcadorUsuario() {
+// continuo y por el botón 📍; antes estaba duplicado en ambas funciones).
+// El popup muestra coordenadas y precisión para poder diagnosticar a simple
+// vista si el navegador da una ubicación exacta o aproximada (± grande).
+function actualizarMarcadorUsuario(precision) {
     if (!estado.mapa) return;
+    const [lat, lng] = estado.posActual;
+    const extras = Number.isFinite(precision)
+        ? `<br>${lat.toFixed(5)}, ${lng.toFixed(5)} · ±${Math.round(precision)} m`
+        : '';
+    const texto = `Estás aquí${extras}`;
     if (estado.userMarker) {
         estado.userMarker.setLatLng(estado.posActual);
+        estado.userMarker.setPopupContent(texto);
     } else {
         estado.userMarker = L.marker(estado.posActual, { icon: iconoUsuario() })
             .addTo(estado.mapa)
-            .bindPopup('Estás aquí');
+            .bindPopup(texto);
     }
 }
 
@@ -106,12 +126,19 @@ export function obtenerUbicacion(centrar) {
 
     navigator.geolocation.getCurrentPosition((pos) => {
         estado.posActual = [pos.coords.latitude, pos.coords.longitude];
-        actualizarMarcadorUsuario();
+        actualizarMarcadorUsuario(pos.coords.accuracy);
         if (centrar && estado.mapa) {
             // { duration } acota el vuelo a 1,5 s: sin él, Leaflet calcula la
             // duración según la distancia (1000 * S * 0.8 ms) y en rutas largas
             // el mapa tarda varios segundos en moverse, como si no pasara nada
             estado.mapa.flyTo(estado.posActual, 15, { duration: 1.5 });
+            // Decir qué reportó el navegador: si la precisión es de cientos de
+            // metros, la ubicación es aproximada (WiFi/IP, sin GPS)
+            const [lat, lng] = estado.posActual;
+            const prec = Number.isFinite(pos.coords.accuracy) ? Math.round(pos.coords.accuracy) : null;
+            mostrarInfoGPS(`📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}` +
+                (prec !== null ? ` · precisión ±${prec} m` : '') +
+                (prec !== null && prec > 100 ? ' (ubicación aproximada)' : ''));
         }
     }, (error) => {
         // Regla: lo que pidió el usuario avisa en pantalla; lo automático va a consola
@@ -131,7 +158,7 @@ export function manejarPosicion(pos) {
     estado.posActual = [pos.coords.latitude, pos.coords.longitude];
 
     // Mover (o crear) el marcador del usuario en el mapa
-    actualizarMarcadorUsuario();
+    actualizarMarcadorUsuario(pos.coords.accuracy);
 
     // Acumular la traza (y la distancia) solo mientras dura la actividad
     registrarPunto(estado.posActual);

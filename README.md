@@ -59,8 +59,11 @@ Dependencias (sin ciclos): `datos/util/estado/dom` → `historial` → `activida
 - Geolocalización con seguimiento continuo (`watchPosition`). Regla de errores:
   **lo automático es silencio (consola) y lo que pide el usuario avisa** (alerta
   `#alerta-gps` al pulsar 📍); las peticiones automáticas van sin `timeout` para
-  no morir mientras el navegador muestra el diálogo de permiso. Lecturas con
-  imprecisión > 35 m se descartan.
+  no morir mientras el navegador muestra el diálogo de permiso. Al pulsar 📍
+  aparece un toast azul con **las coordenadas y la precisión (± m) que reporta
+  el navegador**, y el popup del marcador muestra lo mismo — así se distingue
+  de inmediato una ubicación exacta (± decenas de m) de una aproximada por
+  WiFi/IP (± cientos/miles de m). Lecturas con imprecisión > 35 m se descartan.
 - Traza del recorrido: línea punteada azul que crece mientras hay actividad.
 - Panel flotante en vivo (`#hud-actividad`): tiempo, distancia y ritmo min/km.
 - Historial de sesiones en `localStorage` (clave `runwell-historial`), con
