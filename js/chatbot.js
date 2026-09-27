@@ -19,34 +19,36 @@ export function inicializarChatbot() {
     });
 
     async function enviarMensaje() {
+        const inputField = document.getElementById('chatbot-input');
+        const messagesContainer = document.getElementById('chatbot-messages');
         const texto = inputField.value.trim();
+        
         if (!texto) return;
 
-        messagesContainer.innerHTML += `<div class="user-msg">${texto}</div>`;
+        // Mostrar mensaje del usuario
+        const userDiv = document.createElement('div');
+        userDiv.className = 'user-msg';
+        userDiv.innerText = texto;
+        messagesContainer.appendChild(userDiv);
+        
         inputField.value = '';
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
+        // Mostrar indicador de carga temporal del bot
         const loadingDiv = document.createElement('div');
         loadingDiv.className = 'bot-msg';
         loadingDiv.innerText = 'Escribiendo...';
         messagesContainer.appendChild(loadingDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
+        let respuestaFinal = "";
         try {
-            // Pega aquí tu clave real (la que empieza por AQ...)
-            const API_KEY = "AQ.Ab8RN6KDLUeCm8iHsl303P_S5u8INBPlxdcXonrnP_SepdKtZQ"; 
-
-            // Llamada usando la URL oficial soportada por el sistema actual
-            const response = anadirConsulta(API_KEY, texto);
-            // Simulamos la respuesta mientras conectamos con el SDK global
-            const respuestaIA = await consultarGemini(API_KEY, texto);
-            
-            loadingDiv.innerText = respuestaIA;
+            respuestaFinal = generarRespuestaLocal(texto);
         } catch (error) {
-            console.error('Error con Gemini:', error);
-            loadingDiv.innerText = '¡Hola! Como asistente de RunWell te ayudo con tus rutas y entrenamientos.';
+            respuestaFinal = "¡Hola! Como asistente de RunWell te ayudo con tus rutas y entrenamientos.";
         }
 
+        loadingDiv.innerText = respuestaFinal;
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
