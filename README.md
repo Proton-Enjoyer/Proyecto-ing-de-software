@@ -1,0 +1,78 @@
+# RunWell 🏃
+
+Aplicación web de seguimiento de running: rutas predefinidas en Maracaibo, mapa interactivo,
+actividades con cronómetro (trote/carrera) e historial de sesiones.
+
+Proyecto académico de Ingeniería de Software — frontend puro (HTML + CSS + JavaScript),
+sin frameworks ni backend. Mapas con [Leaflet](https://leafletjs.com/) + OpenStreetMap.
+
+## Cómo ejecutarla
+
+El JS usa **módulos ES**, así que hay que servir la carpeta por HTTP
+(abrir `index.html` con doble clic / `file://` no carga los módulos por CORS):
+
+```bash
+python3 -m http.server 8000
+# → http://localhost:8000
+```
+
+Alternativas: cualquier servidor estático, o el despliegue en Vercel.
+La geolocalización solo funciona en contextos seguros (HTTPS o `localhost`).
+
+## Estructura
+
+```
+├── index.html            estructura de la página (secciones, mapa, HUD, prompt)
+├── css/
+│   ├── variables.css     :root, tema oscuro, reset (se carga primero)
+│   ├── base.css          nav, hero, botones, switch de tema, menú hamburguesa
+│   ├── mapa.css          mapa, marcadores, popups, prompt, panel HUD, alerta GPS
+│   ├── secciones.css     eventos, historial y modo oscuro de tarjetas
+│   └── responsive.css    media queries (móvil, navbar, menú desplegable)
+├── js/
+│   ├── datos.js          rutas mock (misRutas)
+│   ├── util.js           funciones puras: tiempo, distancia (Haversine), ritmo, colisión
+│   ├── estado.js         objeto `estado` compartido (mapa, GPS, actividad, popups)
+│   ├── dom.js            referencias a elementos del DOM (una sola vez)
+│   ├── actividad.js      cronómetro, HUD, traza, guardado de sesiones
+│   ├── proximidad.js     detección ≤ 50 m de una ruta + prompt (cooldown 20 s)
+│   ├── geolocalizacion.js GPS: seguimiento continuo, errores, marcador del usuario
+│   ├── mapa.js           abrir/cerrar mapa, dibujo de rutas y popups
+│   ├── eventos.js        tarjetas de la sección Eventos
+│   ├── navegacion.js     mostrar/ocultar secciones + menú móvil
+│   ├── historial.js      localStorage: guardado, lectura, render y migración
+│   ├── tema.js           modo oscuro persistente (clave `runwell-tema`)
+│   └── main.js           punto de entrada: conecta botones ↔ módulos
+└── docs/diagrama-casos-uso.md
+```
+
+Dependencias (sin ciclos): `datos/util/estado/dom` → `historial` → `actividad` →
+`proximidad` → `geolocalizacion` → `mapa` → `eventos`; `main.js` importa todos.
+
+## Funcionalidades
+
+- Rutas predefinidas en Maracaibo (zonas LUZ y Paseo Sur) como mock data.
+- Mapa interactivo que dibuja las rutas; botón 📍 para centrar la ubicación.
+- Sección de Eventos con día/hora por ruta y botón "Ver Ruta en Mapa".
+- Actividad tipo **trote o carrera** con cronómetro: se inicia desde los popups
+  del mapa o desde el prompt de proximidad y se detiene con "Detener".
+- Geolocalización con seguimiento continuo (`watchPosition`) y alertas visibles
+  si falla el GPS; lecturas con imprecisión > 35 m se descartan.
+- Traza del recorrido: línea punteada azul que crece mientras hay actividad.
+- Panel flotante en vivo (`#hud-actividad`): tiempo, distancia y ritmo min/km.
+- Historial de sesiones en `localStorage` (clave `runwell-historial`), con
+  migración automática de las claves/formatos antiguos.
+- Modo oscuro persistente (`runwell-tema`).
+
+## Datos guardados (localStorage)
+
+| Clave | Contenido |
+|---|---|
+| `runwell-historial` | Sesiones: `{id, tipo, ruta, fecha, tiempo, distancia, ritmo}` |
+| `runwell-tema` | `"oscuro"` o `"claro"` |
+
+## Notas
+
+- Se sirve en Vercel; se evaluó Supabase (BaaS gratuita) si más adelante
+  hace backend (registro/login y estadísticas).
+- Casos de uso planeados en `docs/diagrama-casos-uso.md`.
