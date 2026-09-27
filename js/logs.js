@@ -25,13 +25,15 @@ let parte = 0;   // número de archivo dentro de la sesión (avanza si la subida
 let subiendo = false;
 
 // Registra un evento. Nunca lanza errores (aunque falle el detalle).
+// El spread va PRIMERO: detalle no puede pisar t/tipo/pagina (los campos
+// fijos van al final y siempre ganan — evita colisiones de nombre).
 export function log(tipo, detalle = {}) {
     try {
         buffer.push({
+            ...detalle,
             t: new Date().toISOString(),
             tipo,
-            pagina: (location.hash || '') + location.pathname,
-            ...detalle
+            pagina: (location.hash || '') + location.pathname
         });
         if (buffer.length > MAX_BUFFER) buffer.shift();
     } catch (e) {
@@ -39,13 +41,15 @@ export function log(tipo, detalle = {}) {
     }
 }
 
-// Estado de la app para el heartbeat ("qué está haciendo la app ahora")
+// Estado de la app para el heartbeat ("qué está haciendo la app ahora").
+// El tipo de actividad va como "actividad" (no "tipo", que sería pisado
+// por el nombre del evento).
 function resumenApp() {
     try {
         const act = estado.actividad;
         return {
             activa: act.activa,
-            tipo: act.tipo,
+            actividad: act.tipo,
             segundos: act.seconds,
             dist_m: Math.round(estado.distanciaTotal),
             pos: estado.posActual

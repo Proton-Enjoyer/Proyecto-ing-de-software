@@ -26,7 +26,7 @@ export function iniciarActividad(rutaIdx, tipo = 'trote') {
     actividad.seconds = 0;
     actividad.interval = setInterval(tickActividad, 1000);
     log('iniciar-actividad', {
-        tipo,
+        actividad: tipo,
         ruta: misRutas[rutaIdx] ? misRutas[rutaIdx].nombre : null
     });
 
@@ -47,7 +47,7 @@ export function detenerActividad() {
     actividad.activa = false;
 
     log('fin-actividad', {
-        tipo: actividad.tipo,
+        actividad: actividad.tipo,
         tiempo: formatoTiempo(actividad.seconds),
         distancia_km: parseFloat((estado.distanciaTotal / 1000).toFixed(2))
     });

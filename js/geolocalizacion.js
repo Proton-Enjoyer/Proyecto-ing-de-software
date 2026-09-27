@@ -38,7 +38,8 @@ function detalle(error) {
 }
 
 function manejarErrorGeolocalizacion(error) {
-    const codigos = ['PERMISSION_DENIED', 'POSITION_UNAVAILABLE', 'TIMEOUT'];
+    // Códigos reales de GeolocationPositionError: 1=permiso, 2=sin datos, 3=timeout
+    const codigos = { 1: 'PERMISSION_DENIED', 2: 'POSITION_UNAVAILABLE', 3: 'TIMEOUT' };
     log('gps-error', { codigo: codigos[error.code] || `OTRO(${error.code})` });
     switch (error.code) {
         case error.PERMISSION_DENIED:
