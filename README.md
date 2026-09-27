@@ -56,8 +56,11 @@ Dependencias (sin ciclos): `datos/util/estado/dom` → `historial` → `activida
 - Sección de Eventos con día/hora por ruta y botón "Ver Ruta en Mapa".
 - Actividad tipo **trote o carrera** con cronómetro: se inicia desde los popups
   del mapa o desde el prompt de proximidad y se detiene con "Detener".
-- Geolocalización con seguimiento continuo (`watchPosition`) y alertas visibles
-  si falla el GPS; lecturas con imprecisión > 35 m se descartan.
+- Geolocalización con seguimiento continuo (`watchPosition`). Regla de errores:
+  **lo automático es silencio (consola) y lo que pide el usuario avisa** (alerta
+  `#alerta-gps` al pulsar 📍); las peticiones automáticas van sin `timeout` para
+  no morir mientras el navegador muestra el diálogo de permiso. Lecturas con
+  imprecisión > 35 m se descartan.
 - Traza del recorrido: línea punteada azul que crece mientras hay actividad.
 - Panel flotante en vivo (`#hud-actividad`): tiempo, distancia y ritmo min/km.
 - Historial de sesiones en `localStorage` (clave `runwell-historial`), con
