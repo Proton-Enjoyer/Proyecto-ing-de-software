@@ -98,6 +98,7 @@ export function iniciarAutenticacion() {
                 } else {
                     userAvatarImg.src = "https://via.placeholder.com/80";
                 }
+                userAvatarImg.style.display = 'block';
                 userAvatarContainer.style.display = 'block';
             }
         } else {
