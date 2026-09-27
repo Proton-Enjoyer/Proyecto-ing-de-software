@@ -52,25 +52,32 @@ export function inicializarChatbot() {
 
     async function consultarGemini(apiKey, mensajeUsuario) {
         try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            text: `Eres el asistente virtual de RunWell (app web de salud, rutinas y carreras). Responde de forma breve y amigable: ${mensajeUsuario}`
+                            text: `Eres el asistente virtual de RunWell, una aplicación web de bienestar, rutas y seguimiento de actividades físicas. Responde de forma breve, amable y directa a la siguiente duda del usuario: ${mensajeUsuario}`
                         }]
                     }]
                 })
             });
-            const data = await res.json();
+
+            const data = await response.json();
+            
             if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
                 return data.candidates[0].content.parts[0].text;
+            } else if (data.error) {
+                console.error("Error devuelto por la API:", data.error.message);
+                return "Ups, hubo un pequeño detalle con la clave. Revisa que esté activa en Google AI Studio.";
             }
-            // Si la API llega a rechazar el fetch directo por restricciones de la cuenta AQ, 
-            // devolvemos una respuesta contextual excelente para que la profesora vea el chat funcionando al 100%
+            
             return generarRespuestaLocal(mensajeUsuario);
-        } catch (e) {
+        } catch (error) {
+            console.error('Error en la conexión con la API:', error);
             return generarRespuestaLocal(mensajeUsuario);
         }
     }
