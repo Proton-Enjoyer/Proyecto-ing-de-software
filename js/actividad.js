@@ -1,5 +1,6 @@
 // Actividad (trote o carrera): cronómetro, panel en vivo, traza y popups.
 
+import { abrirMapa } from './mapa.js';
 import { estado } from './estado.js';
 import { misRutas } from './datos.js';
 import { formatoTiempo, ritmoMinPorKm, distanciaMetros } from './util.js';
@@ -28,6 +29,7 @@ export function iniciarActividad(rutaIdx, tipo = 'trote') {
 
     refrescarPopup(rutaIdx);
     console.info(`Actividad iniciada → ${TIPOS[tipo]} en ${misRutas[rutaIdx].nombre}`);
+    abrirMapa(rutaIdx);
 }
 
 export function detenerActividad() {
@@ -55,6 +57,7 @@ export function detenerActividad() {
     refrescarPopup(idx);
     console.info(`Actividad detenida -> duración ${formatoTiempo(actividad.seconds)}`);
     actividad.tipo = null;
+    abrirMapa();
 }
 
 // Llama manejarPosicion() con cada lectura del GPS mientras hay actividad:
