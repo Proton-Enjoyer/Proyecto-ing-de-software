@@ -26,7 +26,22 @@ export function iniciarAutenticacion() {
         if (authModal) authModal.classList.add('map-hidden');
     }
 
-    if (closeAuthModal) closeAuthModal.addEventListener('click', cerrarModal);
+    // Botón de cerrar (la 'X')
+    if (closeAuthModal) {
+        closeAuthModal.addEventListener('click', (e) => {
+            e.preventDefault();
+            cerrarModal();
+        });
+    }
+
+    // Cerrar al hacer clic en el fondo oscuro del modal
+    if (authModal) {
+        authModal.addEventListener('click', (e) => {
+            if (e.target === authModal) {
+                cerrarModal();
+            }
+        });
+    }
 
     if (loginNavBtn) {
         loginNavBtn.addEventListener('click', (e) => {
