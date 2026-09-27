@@ -6,6 +6,7 @@ import { misRutas } from './datos.js';
 import { formatoTiempo, ritmoMinPorKm, distanciaMetros } from './util.js';
 import { hudPanel, hudTime, hudDist, hudRitmo } from './dom.js';
 import { guardarActividad } from './historial.js';
+import { supabase } from '../supabase.js';
 
 export const TIPOS = { trote: '🏃 Trote', carrera: '⚡ Carrera' };
 
@@ -49,6 +50,28 @@ export function detenerActividad() {
         distancia: (estado.distanciaTotal / 1000).toFixed(2),
         ritmo: ritmoMinPorKm(actividad.seconds, estado.distanciaTotal)
     });
+    // Guardado en la nube con Supabase
+    (async () => {
+        try {
+            const { data, error } = await supabase
+                .from('actividades')
+                .insert([
+                    { 
+                        tipo: actividad.tipo === 'carrera' ? 'Carrera' : 'Trote',
+                        tiempo: formatoTiempo(actividad.seconds),
+                        distancia: parseFloat((estado.distanciaTotal / 1000).toFixed(2))
+                    }
+                ]);
+
+            if (error) {
+                console.error('Error al guardar en Supabase:', error.message);
+            } else {
+                console.log('¡Sincronizado en Supabase con éxito!', data);
+            }
+        } catch (err) {
+            console.error('Error de red:', err);
+        }
+    })();
 
     // Última actualización del panel y ocultarlo
     actualizarPanelActividad();
