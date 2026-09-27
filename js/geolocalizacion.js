@@ -53,18 +53,6 @@ function manejarErrorGeolocalizacion(error) {
     }
 }
 
-// Icono del usuario (se crea al usarlo, cuando Leaflet ya cargó)
-function iconoUsuario() {
-    if (!estado.userIcon) {
-        estado.userIcon = L.divIcon({
-            className: 'user-marker',
-            iconSize: [20, 20],
-            iconAnchor: [10, 10]
-        });
-    }
-    return estado.userIcon;
-}
-
 function iconoUsuario() {
     let avatarUrl = "https://via.placeholder.com/40";
     const avatarImgNavbar = document.getElementById('user-avatar-img');
