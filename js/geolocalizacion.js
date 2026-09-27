@@ -3,6 +3,7 @@
 import { estado } from './estado.js';
 import { evaluarProximidad } from './proximidad.js';
 import { registrarPunto } from './actividad.js';
+import { log } from './logs.js';
 
 // Alerta visual del GPS: error en rojo, información (coordenadas) en azul
 // (los estilos viven en css/mapa.css, no en JS)
@@ -37,6 +38,8 @@ function detalle(error) {
 }
 
 function manejarErrorGeolocalizacion(error) {
+    const codigos = ['PERMISSION_DENIED', 'POSITION_UNAVAILABLE', 'TIMEOUT'];
+    log('gps-error', { codigo: codigos[error.code] || `OTRO(${error.code})` });
     switch (error.code) {
         case error.PERMISSION_DENIED:
             mostrarErrorGPS('Permiso de ubicación bloqueado. Actívalo en el candado 🔒 de la barra → Ubicación → Permitir.');
@@ -147,6 +150,10 @@ export function obtenerUbicacion(centrar) {
     navigator.geolocation.getCurrentPosition((pos) => {
         estado.posActual = [pos.coords.latitude, pos.coords.longitude];
         actualizarMarcadorUsuario(pos.coords.accuracy);
+        log('gps-lectura', {
+            centrar: !!centrar,
+            precision: Number.isFinite(pos.coords.accuracy) ? Math.round(pos.coords.accuracy) : null
+        });
         if (centrar && estado.mapa) {
             // { duration } acota el vuelo a 1,5 s: sin él, Leaflet calcula la
             // duración según la distancia (1000 * S * 0.8 ms) y en rutas largas

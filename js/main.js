@@ -12,6 +12,7 @@ import { mostrarSeccion, alternarMenuMovil, cerrarMenuMovil } from './navegacion
 import { renderizarHistorial, iniciarHistorial } from './historial.js';
 import { iniciarTema } from './tema.js';
 import { iniciarAutenticacion } from './auth.js';
+import { iniciarLogs } from './logs.js';
 
 // Iniciar actividad desde el prompt de proximidad (abre esa ruta y arranca)
 function iniciarDesdePrompt(tipo) {
@@ -65,6 +66,7 @@ if (dom.menuToggle && dom.navItems) {
 }
 
 // --- Arranque ---
+iniciarLogs(); // primero: para capturar los errores de todo lo demás
 iniciarTema();
 iniciarHistorial();
 iniciarTracking(); // esto dispara la detección de rutas

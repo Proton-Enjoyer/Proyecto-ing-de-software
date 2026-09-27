@@ -1,4 +1,5 @@
 import { supabase } from '../supabase.js';
+import { log } from './logs.js';
 
 export function iniciarAutenticacion() {
     const authModal = document.getElementById('auth-modal');
@@ -156,6 +157,7 @@ export function iniciarAutenticacion() {
 
                 if (error) throw error;
 
+                log('registro');
                 alert('¡Registro exitoso! Por favor inicia sesión.');
                 registerForm.reset();
                 if (registerFormContainer) registerFormContainer.classList.add('hidden');
@@ -181,6 +183,7 @@ export function iniciarAutenticacion() {
 
                 if (error) throw error;
 
+                log('login');
                 alert('¡Bienvenido de nuevo!');
                 cerrarModal();
                 loginForm.reset();
@@ -196,6 +199,7 @@ export function iniciarAutenticacion() {
         logoutNavBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             await supabase.auth.signOut();
+            log('logout');
             actualizarUIUsuario();
             alert('Has cerrado sesión correctamente.');
         });

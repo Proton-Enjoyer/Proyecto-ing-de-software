@@ -10,9 +10,11 @@ import {
 } from './actividad.js';
 import { obtenerUbicacion } from './geolocalizacion.js';
 import { mostrarSeccion } from './navegacion.js';
+import { log } from './logs.js';
 
 // Abrir mapa y dibujar rutas
 export function abrirMapa(rutaIndex = null) {
+    log('abrir-mapa', { ruta: rutaIndex });
     // Oculta las demás secciones y muestra el mapa (también hace scrollTo(0,0))
     mostrarSeccion('mapa');
 

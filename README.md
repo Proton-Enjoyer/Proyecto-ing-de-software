@@ -69,6 +69,14 @@ Dependencias (sin ciclos): `datos/util/estado/dom` → `historial` → `activida
 - Historial de sesiones en `localStorage` (clave `runwell-historial`), con
   migración automática de las claves/formatos antiguos.
 - Modo oscuro persistente (`runwell-tema`).
+- **Logs de la página a Supabase Storage** (`js/logs.js`): captura crashes
+  (errores JS no manejados, promesas rechazadas y recursos rotos) y eventos de
+  uso (secciones, mapa, actividad, login, GPS) más un heartbeat con el estado
+  de la app. Los eventos se suben como JSON por sesión en el bucket `logs`
+  **cada 60 s**, **inmediato al producirse un crash** y **al cerrar la
+  pestaña** (`fetch` con `keepalive`). Si la subida falla, los eventos se
+  conservan en buffer y se reintentan; los fallos de subida son silenciosos en
+  pantalla (solo consola).
 
 ## Datos guardados (localStorage)
 
@@ -79,6 +87,7 @@ Dependencias (sin ciclos): `datos/util/estado/dom` → `historial` → `activida
 
 ## Notas
 
-- Se sirve en Vercel; se evaluó Supabase (BaaS gratuita) si más adelante
-  hace backend (registro/login y estadísticas).
+- Se sirve en Vercel; backend en **Supabase**: auth con avatar (bucket
+  `avatars`), guardado de actividades (tabla `actividades`) y logs de la
+  página (bucket `logs`).
 - Casos de uso planeados en `docs/diagrama-casos-uso.md`.

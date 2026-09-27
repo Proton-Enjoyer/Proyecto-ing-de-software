@@ -7,6 +7,7 @@ import { formatoTiempo, ritmoMinPorKm, distanciaMetros } from './util.js';
 import { hudPanel, hudTime, hudDist, hudRitmo } from './dom.js';
 import { guardarActividad } from './historial.js';
 import { supabase } from '../supabase.js';
+import { log } from './logs.js';
 
 export const TIPOS = { trote: '🏃 Trote', carrera: '⚡ Carrera' };
 
@@ -24,6 +25,10 @@ export function iniciarActividad(rutaIdx, tipo = 'trote') {
     actividad.tipo = tipo;
     actividad.seconds = 0;
     actividad.interval = setInterval(tickActividad, 1000);
+    log('iniciar-actividad', {
+        tipo,
+        ruta: misRutas[rutaIdx] ? misRutas[rutaIdx].nombre : null
+    });
 
     hudPanel.classList.remove('hud-hidden');
     actualizarPanelActividad();
@@ -40,6 +45,12 @@ export function detenerActividad() {
     clearInterval(actividad.interval);
     actividad.interval = null;
     actividad.activa = false;
+
+    log('fin-actividad', {
+        tipo: actividad.tipo,
+        tiempo: formatoTiempo(actividad.seconds),
+        distancia_km: parseFloat((estado.distanciaTotal / 1000).toFixed(2))
+    });
 
     // Guardar la actividad finalizada en el historial (mismo formato
     // y misma clave que lee la sección Historial)

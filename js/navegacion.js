@@ -8,9 +8,11 @@ import {
     mapContainer,
     navItems
 } from './dom.js';
+import { log } from './logs.js';
 
 // Muestra una sección y oculta las demás (fuente única de verdad del layout)
 export function mostrarSeccion(cual) {
+    log('ver-seccion', { seccion: cual });
     heroSection.classList.toggle('hidden', cual !== 'inicio');
     eventosSection.classList.toggle('hidden', cual !== 'eventos');
     historialSection.classList.toggle('hidden', cual !== 'historial');

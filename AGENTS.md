@@ -48,6 +48,10 @@ dashboard de estadísticas e historial de progreso. No hay backend ni persistenc
 (se evaluó Supabase como BaaS gratuita y GitHub Pages/Vercel para el deploy).
 
 ## Notas de desarrollo
+- **Logs** (`js/logs.js`): eventos de uso y crashes se suben a Supabase
+  Storage (bucket `logs`) cada 60 s, al crash y al cerrar la pestaña; fallos
+  de subida silenciosos (solo consola). La prueba local vive en
+  `__probe_logs.html` (ignorado por git).
 - **Módulos ES**: hay que servir por HTTP (`python3 -m http.server`); `file://` no carga los módulos. `L` (Leaflet) es un global accesible desde los módulos porque se carga como script clásico antes de `main.js`.
 - El mismo popup se vincula a los marcadores de inicio y fin de cada ruta (duplicado de listeners por diseño).
 - El popup de Leaflet **no está en el `document` hasta que se abre**: `estado.popupsRuta` registra los nodos por ruta para poder actualizar su UI aunque esté cerrado (si no, iniciar actividad desde el prompt dejaría el popup desfasado). `js/eventos.js` reutiliza esos nodos para abrir el popup tras "Ver Ruta en Mapa".
