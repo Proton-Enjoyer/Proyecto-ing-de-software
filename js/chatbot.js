@@ -37,27 +37,32 @@ export function inicializarChatbot() {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
         try {
-            // Llamada directa a la API de Gemini
-            const API_KEY = "TU_GEMINI_API_KEY_AQUI"; // Reemplaza con tu clave de API de Google AI Studio
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
+            // ¡IMPORTANTE! Coloca aquí tu API Key real de Google AI Studio
+            const API_KEY = "AQ.Ab8RN6KDLUeCm8iHsl303P_S5u8INBPlxdcXonrnP_SepdKtZQ"; 
+            
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            text: `Eres el asistente virtual de la aplicación RunWell (app web de salud, rutinas y carreras). Responde de forma breve, concisa y amigable al usuario: ${texto}`
+                            text: `Eres el asistente virtual de RunWell, una aplicación web de bienestar, rutas y seguimiento de actividades físicas. Responde de forma breve, concisa y amigable al usuario: ${texto}`
                         }]
                     }]
                 })
             });
 
             const data = await response.json();
-            const respuestaIA = data.candidates?.[0]?.content?.parts?.[0]?.text || "No pude procesar la respuesta en este momento.";
             
-            loadingDiv.innerText = respuestaIA;
+            if (data.candidates && data.candidates[0].content.parts[0].text) {
+                loadingDiv.innerText = data.candidates[0].content.parts[0].text;
+            } else {
+                console.error('Respuesta inesperada de la API:', data);
+                loadingDiv.innerText = 'Ups, la API no devolvió una respuesta válida. Revisa tu API Key.';
+            }
         } catch (error) {
             console.error('Error con Gemini API:', error);
-            loadingDiv.innerText = 'Ups, ocurrió un error al consultar el asistente.';
+            loadingDiv.innerText = 'Ups, ocurrió un error de conexión con el asistente.';
         }
 
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
