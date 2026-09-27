@@ -92,14 +92,14 @@
 
 .bot-msg {
     background: rgba(0, 123, 255, 0.1);
-    color: var(--text, #333);
+    color: var(--text, #111111) !important;
     align-self: flex-start;
     border-bottom-left-radius: 2px;
 }
 
 .user-msg {
     background: var(--primary, #007bff);
-    color: #fff;
+    color: #ffffff !important;
     align-self: flex-end;
     border-bottom-right-radius: 2px;
 }
@@ -119,8 +119,13 @@
     border-radius: 8px;
     border: 1px solid var(--text, #ccc);
     background: var(--bg, #fff);
-    color: var(--text, #333);
+    color: var(--text, #111111) !important;
     outline: none;
+}
+
+.chatbot-input-area input::placeholder {
+    color: var(--text, #666);
+    opacity: 0.7;
 }
 
 .chatbot-input-area button {
