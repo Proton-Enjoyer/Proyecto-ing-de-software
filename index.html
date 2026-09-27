@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RunWell</title>
     <!-- Estilos por capas (el orden importa: variables → base → resto) -->
     <link rel="stylesheet" href="css/variables.css">
@@ -62,7 +62,7 @@
   </section>
     </main>
     
-    <!-- Añade esto después del </main> -->
+    <!-- Capa de mapa a pantalla completa (fuera del <main> para no heredar sus estilos) -->
     <div id="map-container" class="map-hidden">
       <button id="close-map">X</button>
       <button id="locate-btn" title="Mi ubicación">📍</button>

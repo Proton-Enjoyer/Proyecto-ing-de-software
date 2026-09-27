@@ -19,7 +19,7 @@
 /* --- CORRECCIÓN DE LAYOUT MÓVIL (NAVBAR Y MAPA) --- */
 
 /* 1. Ajuste del Header/Navbar para que no se corte a la derecha */
-header, nav, .navbar {
+header, nav {
     max-width: 100% !important;
     box-sizing: border-box !important;
     padding-left: 12px !important;
@@ -34,13 +34,15 @@ header, nav, .navbar {
     }
 
     /* Asegurar que el botón Empezar sea visible y no se desborde */
-    #hero-btn, .btn-empezar, header button {
+    #hero-btn, header button {
         padding: 6px 12px !important;
         font-size: 0.8rem !important;
     }
 
-    /* 2. Corregir el mapa y elevar el botón flotante de ubicacion (abajo a la izquierda) */
-    #btn-ubicar, .locate-btn, #btnUbicar {
+    /* 2. Corregir el mapa y elevar el botón flotante de ubicacion (abajo a la izquierda)
+       (antes apuntaba a #btn-ubicar/.locate-btn/#btnUbicar, que no existen:
+       el id real es locate-btn, así que la regla no se aplicaba) */
+    #locate-btn {
         bottom: 30px !important;
         left: 15px !important;
         z-index: 1001 !important;
@@ -52,7 +54,7 @@ header, nav, .navbar {
     }
 
     /* Botón X de cerrar mapa ajustado para no quedar tan al borde */
-    #close-map, .close-btn, #btnCerrar {
+    #close-map {
         top: 15px !important;
         right: 15px !important;
         z-index: 1001 !important;

@@ -4,7 +4,7 @@ import { estado } from './estado.js';
 import { misRutas } from './datos.js';
 import { formatoTiempo, ritmoMinPorKm, distanciaMetros } from './util.js';
 import { hudPanel, hudTime, hudDist, hudRitmo } from './dom.js';
-import { guardarEnHistorial } from './historial.js';
+import { guardarActividad } from './historial.js';
 
 export const TIPOS = { trote: '🏃 Trote', carrera: '⚡ Carrera' };
 
@@ -38,14 +38,14 @@ export function detenerActividad() {
     actividad.interval = null;
     actividad.activa = false;
 
-    // Guardar la actividad finalizada en el historial de localStorage
-    guardarEnHistorial({
+    // Guardar la actividad finalizada en el historial (mismo formato
+    // y misma clave que lee la sección Historial)
+    guardarActividad({
+        tipo: actividad.tipo === 'carrera' ? 'Carrera' : 'Trote',
         ruta: misRutas[idx] ? misRutas[idx].nombre : 'Ruta Libre',
-        tipo: actividad.tipo,
-        duracionSegundos: actividad.seconds,
-        distanciaMetros: estado.distanciaTotal,
-        ritmo: ritmoMinPorKm(actividad.seconds, estado.distanciaTotal),
-        fecha: new Date().toISOString()
+        tiempo: formatoTiempo(actividad.seconds),
+        distancia: (estado.distanciaTotal / 1000).toFixed(2),
+        ritmo: ritmoMinPorKm(actividad.seconds, estado.distanciaTotal)
     });
 
     // Última actualización del panel y ocultarlo

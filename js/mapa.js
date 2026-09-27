@@ -2,7 +2,6 @@
 
 import { estado } from './estado.js';
 import { misRutas } from './datos.js';
-import { hudTime, hudDist, hudRitmo } from './dom.js';
 import {
     iniciarActividad,
     detenerActividad,
@@ -11,7 +10,6 @@ import {
 } from './actividad.js';
 import { obtenerUbicacion } from './geolocalizacion.js';
 import { mostrarSeccion } from './navegacion.js';
-import { guardarActividad } from './historial.js';
 
 // Abrir mapa y dibujar rutas
 export function abrirMapa(rutaIndex = null) {
@@ -127,8 +125,10 @@ export function abrirMapa(rutaIndex = null) {
     obtenerUbicacion(false);
 }
 
-// Cerrar el mapa y volver a la portada
+// Cerrar el mapa y volver a la portada.
+// NOTA: aquí antes se guardaba una sesión falsa ("Carrera - Ruta Perímetro
+// LUZ") cada vez que se cerraba el mapa, aunque no hubiera actividad.
+// Ahora solo se guarda en detenerActividad(), con datos reales.
 export function cerrarMapa() {
-    guardarActividad('Carrera', 'Ruta Perímetro LUZ', hudTime?.textContent || '00:00', hudDist?.textContent || '0.00', hudRitmo?.textContent || '--:--');
     mostrarSeccion('inicio');
 }

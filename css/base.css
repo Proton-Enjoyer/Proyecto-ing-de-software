@@ -39,10 +39,6 @@ button {
     transition: transform 0.3s ease;
 }
 
-#planes-btn {
-    background-color: var(--bg);
-}
-
 button:hover { transform: scale(1.1); }
 .map-hidden { display: none; }
 

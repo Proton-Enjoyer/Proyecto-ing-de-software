@@ -78,15 +78,23 @@
     height: 20px !important;
 }
 
-/* Estilo del cronómetro dentro del popup */
-#timer-display {
-    margin-top: 10px;
-    padding: 10px;
-    background: var(--bg);
-    border: 1px solid var(--text);
-    text-align: center;
-    border-radius: 10px;
+/* Alerta de error del GPS (la crea js/geolocalizacion.js) */
+#alerta-gps {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 2000;
+    background: #ff4d4d;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    font-size: 0.9rem;
+    transition: opacity 0.3s;
 }
+
+#alerta-gps.oculta { opacity: 0; }
 
 .popup-btn {
     margin-top: 5px;

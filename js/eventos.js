@@ -26,10 +26,12 @@ export function renderizarEventos() {
                 estado.mapa.flyTo(coordInicio, 16);
 
                 setTimeout(() => {
-                    if (ventanasEmergentesRuta[index]) {
+                    // (antes se usaba "ventanasEmergentesRuta", un nombre que
+                    // no existía en ningún lado: ReferenceError y no abría)
+                    if (estado.popupsRuta[index]) {
                         L.popup()
                             .setLatLng(coordInicio)
-                            .setContent(ventanasEmergentesRuta[index])
+                            .setContent(estado.popupsRuta[index])
                             .openOn(estado.mapa);
                     }
                 }, 400);

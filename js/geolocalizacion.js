@@ -5,22 +5,17 @@ import { evaluarProximidad } from './proximidad.js';
 import { registrarPunto } from './actividad.js';
 
 // Muestra una alerta visual si falla el GPS
+// (los estilos viven en css/mapa.css, no en JS)
 export function mostrarErrorGPS(mensaje) {
     let alerta = document.getElementById('alerta-gps');
     if (!alerta) {
         alerta = document.createElement('div');
         alerta.id = 'alerta-gps';
-        alerta.style.cssText = `
-      position: fixed; bottom: 20px; right: 20px; z-index: 2000;
-      background: #ff4d4d; color: white; padding: 12px 18px;
-      border-radius: 8px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      font-size: 0.9rem; transition: opacity 0.3s;
-    `;
         document.body.appendChild(alerta);
     }
     alerta.textContent = mensaje;
-    alerta.style.opacity = '1';
-    setTimeout(() => { alerta.style.opacity = '0'; }, 5000);
+    alerta.classList.remove('oculta');
+    setTimeout(() => { alerta.classList.add('oculta'); }, 5000);
 }
 
 function manejarErrorGeolocalizacion(error) {
@@ -89,7 +84,7 @@ export function iniciarTracking() {
 // Ubicación puntual (la usa el botón 📍 y al abrir el mapa)
 export function obtenerUbicacion(centrar) {
     if (!navigator.geolocation) {
-        console.warn('Geolocalización no soportada por el navegador');
+        mostrarErrorGPS('Tu navegador no soporta geolocalización');
         return;
     }
     navigator.geolocation.getCurrentPosition((pos) => {
@@ -98,9 +93,10 @@ export function obtenerUbicacion(centrar) {
         if (centrar && estado.mapa) {
             estado.mapa.flyTo(estado.posActual, 15);
         }
-    }, (err) => {
-        console.warn('Error de geolocalización:', err.message);
-    }, { enableHighAccuracy: true, maximumAge: 5000 });
+    }, (error) => {
+        // Antes era un console.warn invisible para el usuario
+        manejarErrorGeolocalizacion(error);
+    }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 });
 }
 
 // Se ejecuta con CADA actualización del GPS

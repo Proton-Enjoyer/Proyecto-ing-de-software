@@ -1,7 +1,6 @@
 /* RunWell — secciones de contenido: eventos y historial */
 
-/* --- PLANES --- */
-/* Animación */
+/* --- ANIMACIONES --- */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -9,7 +8,7 @@
 
 .fade-in { animation: fadeIn 0.5s ease-out forwards; }
 
-/* Sección Planes */
+/* --- SECCIÓN DE EVENTOS --- */
 .planes-section { padding: 50px 20px; text-align: center; }
 
 .planes-grid {
@@ -27,121 +26,79 @@
     padding: 20px;
     border-radius: 15px;
 }
-/* --- ESTILOS DEL HISTORIAL DE ACTIVIDADES --- */
+
+/* --- HISTORIAL DE ACTIVIDADES --- */
 .historial-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
-  max-width: 1000px;
-  margin: 2rem auto;
-  padding: 0 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
 }
 
 #borrar-historial-btn {
-  background-color: transparent;
-  color: #ff4d4d;
-  border: 1px solid #ff4d4d;
-  padding: 0.5rem 1.25rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s, color 0.2s;
+    background-color: transparent;
+    color: #ff4d4d;
+    border: 1px solid #ff4d4d;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s, color 0.2s;
 }
 
 #borrar-historial-btn:hover {
-  background-color: #ff4d4d;
-  color: #ffffff;
+    background-color: #ff4d4d;
+    color: #ffffff;
 }
 
-/* Estilos para las tarjetas de historial adaptables a modo claro y oscuro */
-.plane-card {
-  background-color: var(--card-bg, #ffffff);
-  border: 1px solid var(--border-color, #e0e0e0);
-  border-radius: 12px;
-  padding: 1.25rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-body.dark-mode .plane-card {
-  background-color: #1e1e1e;
-  border-color: #333333;
-}
-/* --- CORRECCIÓN DE TEXTO Y TARJETAS EN MODO OSCURO --- */
-
-/* Forzar que las tarjetas de eventos tomen el fondo y texto según el tema */
-body.dark-mode .event-card,
-body.dark-mode .planes-card,
-[data-theme="dark"] .event-card,
-[data-theme="dark"] .planes-card {
-    background-color: var(--card-bg, #1e1e1e) !important;
-    color: var(--text, #ffffff) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Asegurar legibilidad en títulos, párrafos y etiquetas dentro de eventos en modo oscuro */
-body.dark-mode .event-card h3,
-body.dark-mode .event-card p,
-body.dark-mode .planes-card h3,
-body.dark-mode .planes-card p,
-[data-theme="dark"] .event-card h3,
-[data-theme="dark"] .event-card p,
-[data-theme="dark"] .planes-card h3,
-[data-theme="dark"] .planes-card p {
-    color: #ffffff !important;
-}
-
-/* Ajuste del botón dentro de la tarjeta en modo oscuro */
-body.dark-mode .event-card button,
-[data-theme="dark"] .event-card button {
-    background-color: var(--primary, #ccff00);
-    color: #000000 !important;
-    font-weight: bold;
-}
-/* --- ESTILOS UNIFICADOS DE HISTORIAL --- */
-
-/* MODO CLARO */
+/* Tarjetas de historial — MODO CLARO */
 .historial-grid > div,
-.historial-card,
-#historial-section .card,
 .plane-card {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    border: 1.5px solid #000000 !important;
+    background-color: #ffffff;
+    color: #000000;
+    border: 1.5px solid #000000;
     border-radius: 12px;
     padding: 16px;
-    box-shadow: none !important;
+    box-shadow: none;
 }
 
 .historial-grid > div *,
-.historial-card *,
-#historial-section .card *,
 .plane-card * {
-    color: #000000 !important;
+    color: #000000;
 }
 
-/* MODO OSCURO (Soporta .dark-theme) */
+/* Tarjetas de historial — MODO OSCURO (la app aplica body.dark-theme) */
 .dark-theme .historial-grid > div,
-.dark-theme .historial-card,
-.dark-theme #historial-section .card,
-.dark-theme .plane-card,
-body.dark-mode .historial-grid > div,
-body.dark-mode .historial-card,
-body.dark-mode #historial-section .card,
-body.dark-mode .plane-card,
-[data-theme="dark"] .historial-grid > div,
-[data-theme="dark"] .historial-card,
-[data-theme="dark"] #historial-section .card,
-[data-theme="dark"] .plane-card {
-    background-color: #121212 !important;
-    color: #ffffff !important;
-    border: 1.5px solid #ffffff !important;
-    border-radius: 12px;
-    box-shadow: none !important;
+.dark-theme .plane-card {
+    background-color: #121212;
+    color: #ffffff;
+    border: 1.5px solid #ffffff;
+    box-shadow: none;
 }
 
-.dark-theme #historial-section *,
-.dark-theme .historial-grid *,
-body.dark-mode #historial-section *,
-[data-theme="dark"] #historial-section * {
-    color: #ffffff !important;
+.dark-theme .historial-grid > div *,
+.dark-theme .plane-card * {
+    color: #ffffff;
+}
+
+/* --- TARJETAS DE EVENTOS EN MODO OSCURO --- */
+/* (antes usaban body.dark-mode / [data-theme="dark"], clases que la app
+   nunca aplica: las reglas no hacían nada) */
+.dark-theme .event-card {
+    background-color: #1e1e1e;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark-theme .event-card h3,
+.dark-theme .event-card p {
+    color: #ffffff;
+}
+
+.dark-theme .event-card button {
+    background-color: var(--primary);
+    color: #000000;
+    font-weight: bold;
 }
