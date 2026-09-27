@@ -66,7 +66,8 @@ async function subir(useKeepalive = false) {
 
     const eventos = buffer.splice(0);
     const nombre = `${sesion}/parte-${String(parte).padStart(4, '0')}.json`;
-    const cuerpo = JSON.stringify({ sesion, eventos });
+    // Con sangría: el archivo se lee bonito al descargarlo desde el dashboard
+    const cuerpo = JSON.stringify({ sesion, eventos }, null, 2);
     let ok = false;
 
     try {
@@ -149,7 +150,7 @@ export function iniciarLogs() {
     // Al cerrar o recargar: último intento que sobrevive a la muerte de la página
     addEventListener('pagehide', () => subir(true));
 
-    console.info(`[logs] activo · subida cada ${INTERVALO_MS / 1000} s · sesión ${sesion.slice(0, 8)}`);
+    console.info(`[logs] activo · subida cada ${INTERVALO_MS / 1000} s · sesión ${sesion}`);
 }
 
 // Depuración desde la consola del navegador: __logs.ver(), __logs.log('x')
@@ -157,5 +158,5 @@ globalThis.__logs = {
     log,
     subir,
     iniciar: iniciarLogs,
-    ver: () => ({ parte, subiendo, buf: buffer.slice() })
+    ver: () => ({ sesion, parte, subiendo, buf: buffer.slice() })
 };
