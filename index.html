@@ -187,6 +187,50 @@
             </div>
         </div>
     </div>
+    <!-- Prompt de proximidad: aparece cuando estás cerca de una ruta -->
+    <div id="proximity-prompt" class="proximity-hidden" role="alertdialog" aria-live="polite">
+        <button id="pp-close" class="pp-close" title="Cerrar">✕</button>
+        <p class="pp-title">¡Estás en <strong id="pp-ruta">—</strong>!</p>
+        <p class="pp-dist" id="pp-dist"></p>
+        <p class="pp-sub">¿Qué quieres iniciar?</p>
+        <div class="pp-actions">
+            <button id="pp-trote" class="pp-btn">🏃 Trote</button>
+            <button id="pp-carrera" class="pp-btn pp-btn-alt">⚡ Carrera</button>
+        </div>
+        <button id="pp-ignorar" class="pp-ignore">Ahora no</button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- CHATBOT FLOTANTE DE IA PARA LA PROFESORA     -->
+    <!-- ========================================== -->
+    <div id="chatbot-toggle-btn" class="chatbot-btn">
+        💬 Asistente IA
+    </div>
+
+    <div id="chatbot-container" class="chatbot-box hidden">
+        <div class="chatbot-header">
+            <span>RunWell Bot 🤖</span>
+            <button id="chatbot-close">✕</button>
+        </div>
+        <div id="chatbot-messages" class="chatbot-messages">
+            <div class="bot-msg">¡Hola! Soy tu asistente de RunWell. ¿En qué te ayudo con tus rutas o entrenamientos?</div>
+        </div>
+        <div class="chatbot-input-area">
+            <input type="text" id="chatbot-input" placeholder="Escribe tu duda..." />
+            <button id="chatbot-send">Enviar</button>
+        </div>
+    </div>
+    <!-- ========================================== -->
+
+    <!-- Leaflet JS (global: se carga antes que los módulos de la app) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- MODAL / CONTENEDOR DE AUTENTICACIÓN -->
+    <div id="auth-modal" class="map-hidden" ... (todo tu modal de auth de siempre) ...</div>
+
+    <!-- Módulos ES: el navegador resuelve js/main.js y sus imports -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
     <!-- Módulos ES: el navegador resuelve js/main.js y sus imports -->
     <script type="module" src="js/main.js"></script>
 </body>
