@@ -94,8 +94,8 @@ function generarRespuestaLocal(pregunta) {
             return "El registro de distancia se actualiza en tiempo real mediante el GPS integrado de la aplicación web. Puedes ver el acumulado semanal en tu perfil.";
         } else if (p.includes('hola') || p.includes('saludos') || p.includes('ayuda')) {
             return "¡Hola! Soy tu asistente virtual de RunWell. Estoy aquí para ayudarte a gestionar tus trayectos, metas de salud y rutinas de entrenamiento.";
-        } else {
-            return `Entendido sobre "${pregunta}". Como asistente de RunWell, te recomiendo mantener la constancia en tus registros diarios para alcanzar tus objetivos de bienestar.`;
+       } else {
+            return "Hmm, no estoy seguro de eso. Pero puedo ayudarte con:\n• Rutas y mapas\n• Planes de entrenamiento\n• Distancias recorridas";
         }
     }
 
@@ -104,3 +104,44 @@ function generarRespuestaLocal(pregunta) {
         if (e.key === 'Enter') enviarMensaje();
     });
 }
+function crearSugerenciasRapidas() {
+        const messagesContainer = document.getElementById('chatbot-messages');
+        
+        // Evitar duplicar los botones si ya existen
+        if (document.getElementById('chatbot-chips')) return;
+
+        const chipsContainer = document.createElement('div');
+        chipsContainer.id = 'chatbot-chips';
+        chipsContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0;';
+
+        const sugerencias = [
+            "¿Cuál es la ruta más corta?",
+            "Ver mi entrenamiento",
+            "¿Cómo mido la distancia?"
+        ];
+
+        sugerencias.forEach(texto => {
+            const btn = document.createElement('button');
+            btn.innerText = texto;
+            btn.style.cssText = 'background: rgba(255, 204, 0, 0.2); border: 1px solid #ffcc00; color: #111; padding: 6px 10px; border-radius: 12px; font-size: 0.75rem; cursor: pointer; font-weight: 500;';
+            
+            btn.onmouseover = () => btn.style.opacity = '0.7';
+            btn.onmouseout = () => btn.style.opacity = '1';
+            
+            btn.onclick = () => {
+                document.getElementById('chatbot-input').value = texto;
+                enviarMensaje();
+                chipsContainer.remove();
+            };
+
+            chipsContainer.appendChild(btn);
+        });
+
+        messagesContainer.appendChild(chipsContainer);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Llamar a los botones justo al cargar o abrir el chat
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(crearSugerenciasRapidas, 500);
+    });
