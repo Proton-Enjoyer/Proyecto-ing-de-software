@@ -5,3 +5,5 @@ __*.html
 .DS_Store
 *.log
 .vscode/
+# Archivo de configuración privada de Supabase
+supabase-config.js
