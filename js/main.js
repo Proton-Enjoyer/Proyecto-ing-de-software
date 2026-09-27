@@ -11,6 +11,7 @@ import { renderizarEventos } from './eventos.js';
 import { mostrarSeccion, alternarMenuMovil, cerrarMenuMovil } from './navegacion.js';
 import { renderizarHistorial, iniciarHistorial } from './historial.js';
 import { iniciarTema } from './tema.js';
+import { iniciarAutenticacion } from './auth.js';
 
 // Iniciar actividad desde el prompt de proximidad (abre esa ruta y arranca)
 function iniciarDesdePrompt(tipo) {
@@ -67,3 +68,4 @@ if (dom.menuToggle && dom.navItems) {
 iniciarTema();
 iniciarHistorial();
 iniciarTracking(); // esto dispara la detección de rutas
+iniciarAutenticacion();
