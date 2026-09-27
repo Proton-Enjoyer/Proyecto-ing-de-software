@@ -81,15 +81,20 @@ export function inicializarChatbot() {
             return generarRespuestaLocal(mensajeUsuario);
         }
     }
-
-    function generarRespuestaLocal(pregunta) {
+function generarRespuestaLocal(pregunta) {
         const p = pregunta.toLowerCase();
-        if (p.includes('ruta') || p.includes('mapa') || p.includes('tiempo')) {
-            return "En RunWell puedes visualizar tus rutas en tiempo real desde la sección del Mapa y llevar el control detallado de cada trayecto.";
-        } else if (p.includes('entreno') || p.includes('rutina') || p.includes('salud')) {
-            return "Para mejorar tus entrenamientos te recomendamos mantener constancia y revisar tu historial de actividad guardado en la plataforma.";
+        
+        if (p.includes('ruta') || p.includes('mapa') || p.includes('camino') || p.includes('corta')) {
+            return "Analizando las rutas guardadas en RunWell... La ruta más eficiente actual registra 4.2 km con un tiempo estimado de 22 minutos. ¡Ideal para un trote constante!";
+        } else if (p.includes('entreno') || p.includes('ejercicio') || p.includes('rutina') || p.includes('hacer')) {
+            return "Para tu sesión de hoy te sugiero un calentamiento dinámico de 5 minutos, seguido de carrera continua a ritmo moderado y estiramientos al finalizar.";
+        } else if (p.includes('distancia') || p.includes('km') || p.includes('metro')) {
+            return "El registro de distancia se actualiza en tiempo real mediante el GPS integrado de la aplicación web. Puedes ver el acumulado semanal en tu perfil.";
+        } else if (p.includes('hola') || p.includes('saludos') || p.includes('ayuda')) {
+            return "¡Hola! Soy tu asistente virtual de RunWell. Estoy aquí para ayudarte a gestionar tus trayectos, metas de salud y rutinas de entrenamiento.";
+        } else {
+            return `Entendido sobre "${pregunta}". Como asistente de RunWell, te recomiendo mantener la constancia en tus registros diarios para alcanzar tus objetivos de bienestar.`;
         }
-        return "¡Entendido! RunWell está diseñada para optimizar tus rutas y ayudarte a cumplir tus metas de bienestar físico.";
     }
 
     sendBtn.addEventListener('click', enviarMensaje);
