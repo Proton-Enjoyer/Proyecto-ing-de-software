@@ -41,7 +41,7 @@ export function abrirMapa(rutaIndex = null) {
         mapaActivo.invalidateSize();
         if (rutaIndex !== null && misRutas[rutaIndex]) {
             const coordInicio = misRutas[rutaIndex].coords[0];
-            mapaActivo.flyTo(coordInicio, 16);
+            mapaActivo.flyTo(coordInicio, 16, { duration: 1.5 });
         }
     }, 200);
 

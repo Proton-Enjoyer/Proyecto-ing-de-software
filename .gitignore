@@ -1,5 +1,5 @@
 # Arnés temporal de pruebas (se regenera desde index.html)
-__probe.html
+__*.html
 
 # Sistema / editores
 .DS_Store

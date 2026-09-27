@@ -23,7 +23,7 @@ export function renderizarEventos() {
 
             if (misRutas[index] && estado.mapa) {
                 const coordInicio = misRutas[index].coords[0];
-                estado.mapa.flyTo(coordInicio, 16);
+                estado.mapa.flyTo(coordInicio, 16, { duration: 1.5 });
 
                 setTimeout(() => {
                     // (antes se usaba "ventanasEmergentesRuta", un nombre que
