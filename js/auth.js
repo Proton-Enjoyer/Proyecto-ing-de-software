@@ -19,11 +19,17 @@ export function iniciarAutenticacion() {
 
     // Funciones para abrir y cerrar modal
     function abrirModal() {
-        if (authModal) authModal.classList.remove('map-hidden');
+        if (authModal) {
+            authModal.style.display = 'flex';
+            authModal.classList.remove('map-hidden');
+        }
     }
 
     function cerrarModal() {
-        if (authModal) authModal.classList.add('map-hidden');
+        if (authModal) {
+            authModal.style.display = 'none';
+            authModal.classList.add('map-hidden');
+        }
     }
 
     // Botón de cerrar (la 'X')
