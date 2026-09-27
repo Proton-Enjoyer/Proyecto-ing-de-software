@@ -88,7 +88,7 @@ function generarRespuestaLocal(pregunta) {
         
         if (p.includes('ruta') || p.includes('mapa') || p.includes('camino') || p.includes('corta')) {
             return "Analizando las rutas guardadas en RunWell... La ruta más eficiente actual registra 4.2 km con un tiempo estimado de 22 minutos. ¡Ideal para un trote constante!";
-        } else if (p.includes('entreno') || p.includes('ejercicio') || p.includes('rutina') || p.includes('hacer')) {
+        } else if (p.includes('entreno') || p.includes('entrenamiento') || p.includes('ejercicio') || p.includes('rutina') || p.includes('hacer')) {
             return "Para tu sesión de hoy te sugiero un calentamiento dinámico de 5 minutos, seguido de carrera continua a ritmo moderado y estiramientos al finalizar.";
         } else if (p.includes('distancia') || p.includes('km') || p.includes('metro')) {
             return "El registro de distancia se actualiza en tiempo real mediante el GPS integrado de la aplicación web. Puedes ver el acumulado semanal en tu perfil.";
