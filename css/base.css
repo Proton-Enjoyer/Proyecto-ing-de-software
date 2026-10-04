@@ -107,3 +107,62 @@ button:hover { transform: scale(1.1); }
     border-radius: 2px;
     transition: all 0.3s ease;
 }
+
+/* ====== ESTILOS DEL MODAL DE AUTENTICACIÓN (auth-modal) ======
+   Se añaden aquí para asegurar que al quitar la clase .hidden el modal
+   se muestre como overlay centrado y no empuje el layout de la página. */
+
+#auth-modal {
+    position: fixed;
+    inset: 0; /* top:0; right:0; bottom:0; left:0; */
+    display: none; /* visible sólo cuando se quita .hidden */
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.55);
+    z-index: 2200;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+#auth-modal .auth-content {
+    width: 100%;
+    max-width: 540px;
+    background: var(--bg);
+    color: var(--text);
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    padding: 26px 28px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    position: relative;
+}
+
+#auth-modal.hidden {
+    display: none !important;
+}
+
+#auth-modal .auth-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+/* Contenido del modal con scroll independiente si excede altura */
+#auth-modal .auth-content > * {
+    max-height: calc(100vh - 80px);
+}
+
+@media (max-width: 600px) {
+    #auth-modal .auth-content {
+        max-width: 420px;
+        width: calc(100% - 40px);
+        padding: 20px;
+        border-radius: 10px;
+    }
+}
