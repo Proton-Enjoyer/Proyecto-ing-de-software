@@ -89,4 +89,4 @@ Dependencias (sin ciclos): `datos/util/estado/dom` → `historial` → `activida
 - Se sirve en Vercel; backend en **Supabase**: auth con avatar (bucket
   `avatars`), guardado de actividades (tabla `actividades`) y logs de la
   página (bucket `logs`).
-- Casos de uso planeados en `docs/diagrama-casos-uso.md`.
+  
