@@ -20,18 +20,22 @@ export function iniciarAutenticacion() {
 
     // Funciones para abrir y cerrar modal
     function abrirModal() {
-        if (authModal) {
-            authModal.style.display = 'flex';
-            authModal.classList.remove('map-hidden');
-        }
+    if (authModal) {
+        // Usar la clase "hidden" que emplea el HTML/CSS del proyecto
+        authModal.classList.remove('hidden');
+        authModal.style.display = 'flex';
+        authModal.setAttribute('aria-hidden', 'false');
     }
+}
 
-    function cerrarModal() {
-        if (authModal) {
-            authModal.style.display = 'none';
-            authModal.classList.add('map-hidden');
-        }
+function cerrarModal() {
+    if (authModal) {
+        // Restaurar la clase "hidden" y atributos accesibles
+        authModal.classList.add('hidden');
+        authModal.style.display = 'none';
+        authModal.setAttribute('aria-hidden', 'true');
     }
+}
 
     // Botón de cerrar (la 'X')
     if (closeAuthModal) {
