@@ -69,18 +69,19 @@
                 <!-- Se llenará dinámicamente desde js/eventos.js -->
             </div>
         </section>
+
         <section id="historial-section" class="planes-section hidden">
-    <h2>Historial de Actividades</h2>
-    <div id="historial-lista" class="historial-grid"></div>
-    <div style="text-align: center; margin-top: 1.5rem;">
-      <button id="borrar-historial-btn" class="hidden">Limpiar Historial</button>
-    </div>
-  </section>
+            <h2>Historial de Actividades</h2>
+            <div id="historial-lista" class="historial-grid"></div>
+            <div style="text-align: center; margin-top: 1.5rem;">
+              <button id="borrar-historial-btn" class="hidden">Limpiar Historial</button>
+            </div>
+        </section>
     </main>
     
     <!-- Capa de mapa a pantalla completa (fuera del <main> para no heredar sus estilos) -->
     <div id="map-container" class="map-hidden">
-      <button id="close-map">X</button>
+      <button id="close-map" aria-label="Cerrar mapa">X</button>
       <button id="locate-btn" title="Mi ubicación">📍</button>
       <div id="map"></div>
     </div>
@@ -114,109 +115,15 @@
         <button id="pp-ignorar" class="pp-ignore">Ahora no</button>
     </div>
 
-    <!-- Leaflet JS (global: se carga antes que los módulos de la app) -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- MODAL / CONTENEDOR DE AUTENTICACIÓN -->
-    <div id="auth-modal" class="map-hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;">
-        <div style="background: var(--bg); color: var(--text); padding: 30px; border-radius: 16px; width: 100%; max-width: 450px; position: relative; border: 2px solid var(--primary); max-height: 90vh; overflow-y: auto;">
-            <button id="close-auth-modal" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 20px; color: var(--text); cursor: pointer; font-weight: bold;">✕</button>
-            
-            <!-- FORMULARIO DE INICIAR SESIÓN -->
-            <div id="login-form-container">
-                <h2 style="text-align: center; margin-bottom: 20px;">Iniciar Sesión</h2>
-                <!-- Imagen de perfil centrada arriba en el formulario -->
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <img id="login-preview-avatar" src="https://via.placeholder.com/80" alt="Perfil" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); display: inline-block;">
-                </div>
-                <form id="login-form" style="display: flex; flex-direction: column; gap: 15px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Correo Electrónico</label>
-                        <input type="email" id="login-email" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--text); background: var(--bg); color: var(--text); box-sizing: border-box;">
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Contraseña</label>
-                        <input type="password" id="login-password" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--text); background: var(--bg); color: var(--text); box-sizing: border-box;">
-                    </div>
-                    <button type="submit" style="margin-top: 10px; width: 100%; padding: 12px; font-size: 1rem;">Entrar</button>
-                </form>
-                <p style="text-align: center; margin-top: 15px; font-size: 0.9rem;">
-                    ¿No tienes cuenta? <a href="#" id="switch-to-register" style="color: var(--primary); font-weight: bold;">Regístrate aquí</a>
-                </p>
-            </div>
-
-            <!-- FORMULARIO DE REGISTRO -->
-            <div id="register-form-container" class="hidden">
-                <h2 style="text-align: center; margin-bottom: 20px;">Crear Cuenta</h2>
-                <form id="register-form" style="display: flex; flex-direction: column; gap: 12px;">
-                    <div style="text-align: center; margin-bottom: 15px;">
-    <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Foto de Perfil</label>
-    <div style="position: relative; width: 80px; height: 80px; margin: 0 auto; border-radius: 50%; overflow: hidden; border: 3px solid var(--primary); cursor: pointer;" onclick="document.getElementById('reg-avatar').click();">
-        <img id="reg-preview-avatar" src="https://via.placeholder.com/80" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
-    </div>
-    <input type="file" id="reg-avatar" accept="image/*" style="display: none;" onchange="
-        const file = this.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('reg-preview-avatar').src = e.target.result;
-            }
-            reader.readAsDataURL(file);
-        }
-    ">
-    <span style="font-size: 0.8rem; color: gray; display: block; margin-top: 5px;">Haz clic en el círculo para elegir foto</span>
-</div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Nombre</label>
-                        <input type="text" id="reg-nombre" required style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--text); background: var(--bg); color: var(--text); box-sizing: border-box;">
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Apellido</label>
-                        <input type="text" id="reg-apellido" required style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--text); background: var(--bg); color: var(--text); box-sizing: border-box;">
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Correo Electrónico</label>
-                        <input type="email" id="reg-email" required style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--text); background: var(--bg); color: var(--text); box-sizing: border-box;">
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Contraseña</label>
-                        <input type="password" id="reg-password" required style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--text); background: var(--bg); color: var(--text); box-sizing: border-box;">
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Confirmar Contraseña</label>
-                        <input type="password" id="reg-confirm-password" required style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--text); background: var(--bg); color: var(--text); box-sizing: border-box;">
-                    </div>
-                    <button type="submit" style="margin-top: 5px; width: 100%; padding: 12px; font-size: 1rem;">Registrarse</button>
-                </form>
-                <p style="text-align: center; margin-top: 15px; font-size: 0.9rem;">
-                    ¿Ya tienes cuenta? <a href="#" id="switch-to-login" style="color: var(--primary); font-weight: bold;">Inicia Sesión</a>
-                </p>
-            </div>
-        </div>
-    </div>
-    <!-- Prompt de proximidad: aparece cuando estás cerca de una ruta -->
-    <div id="proximity-prompt" class="proximity-hidden" role="alertdialog" aria-live="polite">
-        <button id="pp-close" class="pp-close" title="Cerrar">✕</button>
-        <p class="pp-title">¡Estás en <strong id="pp-ruta">—</strong>!</p>
-        <p class="pp-dist" id="pp-dist"></p>
-        <p class="pp-sub">¿Qué quieres iniciar?</p>
-        <div class="pp-actions">
-            <button id="pp-trote" class="pp-btn">🏃 Trote</button>
-            <button id="pp-carrera" class="pp-btn pp-btn-alt">⚡ Carrera</button>
-        </div>
-        <button id="pp-ignorar" class="pp-ignore">Ahora no</button>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- CHATBOT FLOTANTE DE IA PARA LA PROFESORA     -->
-    <!-- ========================================== -->
-    <div id="chatbot-toggle-btn" class="chatbot-btn">
+    <!-- CHATBOT FLOTANTE DE IA PARA LA PROFESORA -->
+    <div id="chatbot-toggle-btn" class="chatbot-btn" aria-hidden="false">
         💬 Asistente IA
     </div>
 
-    <div id="chatbot-container" class="chatbot-box hidden">
+    <div id="chatbot-container" class="chatbot-box hidden" aria-hidden="true">
         <div class="chatbot-header">
             <span>RunWell Bot 🤖</span>
-            <button id="chatbot-close">✕</button>
+            <button id="chatbot-close" aria-label="Cerrar chatbot">✕</button>
         </div>
         <div id="chatbot-messages" class="chatbot-messages">
             <div class="bot-msg">¡Hola! Soy tu asistente de RunWell. ¿En qué te ayudo con tus rutas o entrenamientos?</div>
@@ -226,17 +133,78 @@
             <button id="chatbot-send">Enviar</button>
         </div>
     </div>
-    <!-- ========================================== -->
+
+    <!-- MODAL / CONTENEDOR DE AUTENTICACIÓN -->
+    <div id="auth-modal" class="auth-modal hidden" role="dialog" aria-hidden="true">
+        <div class="auth-content">
+            <button id="close-auth-modal" class="auth-close" aria-label="Cerrar">✕</button>
+
+            <!-- FORMULARIO DE INICIAR SESIÓN -->
+            <div id="login-form-container">
+                <h2 style="text-align: center; margin-bottom: 20px;">Iniciar Sesión</h2>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <img id="login-preview-avatar" src="https://via.placeholder.com/80" alt="Perfil" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary);">
+                </div>
+                <form id="login-form" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Correo Electrónico</label>
+                        <input type="email" id="login-email" required style="width: 100%; padding: 10px; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Contraseña</label>
+                        <input type="password" id="login-password" required style="width: 100%; padding: 10px; border-radius: 8px;">
+                    </div>
+                    <button type="submit" style="margin-top: 10px; width: 100%; padding: 12px; font-size: 1rem;">Entrar</button>
+                </form>
+                <p style="text-align: center; margin-top: 15px; font-size: 0.9rem;">
+                    ¿No tienes cuenta? <a href="#" id="switch-to-register" style="color: var(--primary); font-weight: bold;">Regístrate aquí</a>
+                </p>
+            </div>
+
+            <!-- FORMULARIO DE REGISTRO (oculto por defecto) -->
+            <div id="register-form-container" class="hidden">
+                <h2 style="text-align: center; margin-bottom: 20px;">Crear Cuenta</h2>
+                <form id="register-form" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Foto de Perfil</label>
+                        <div style="position: relative; width: 80px; height: 80px; margin: 0 auto; border-radius: 50%; overflow: hidden; border: 3px solid var(--primary); cursor: pointer;" onclick="document.getElementById('reg-avatar').click();">
+                            <img id="reg-preview-avatar" src="https://via.placeholder.com/80" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <input type="file" id="reg-avatar" accept="image/*" style="display: none;">
+                        <span style="font-size: 0.8rem; color: gray; display: block; margin-top: 5px;">Haz clic en el círculo para elegir foto</span>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Nombre</label>
+                        <input type="text" id="reg-nombre" required style="width: 100%; padding: 8px; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Apellido</label>
+                        <input type="text" id="reg-apellido" required style="width: 100%; padding: 8px; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Correo Electrónico</label>
+                        <input type="email" id="reg-email" required style="width: 100%; padding: 8px; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Contraseña</label>
+                        <input type="password" id="reg-password" required style="width: 100%; padding: 8px; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Confirmar Contraseña</label>
+                        <input type="password" id="reg-confirm-password" required style="width: 100%; padding: 8px; border-radius: 8px;">
+                    </div>
+                    <button type="submit" style="margin-top: 5px; width: 100%; padding: 12px; font-size: 1rem;">Registrarse</button>
+                </form>
+                <p style="text-align: center; margin-top: 15px; font-size: 0.9rem;">
+                    ¿Ya tienes cuenta? <a href="#" id="switch-to-login" style="color: var(--primary); font-weight: bold;">Inicia Sesión</a>
+                </p>
+            </div>
+        </div>
+    </div>
 
     <!-- Leaflet JS (global: se carga antes que los módulos de la app) -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- MODAL / CONTENEDOR DE AUTENTICACIÓN -->
-    <div id="auth-modal" class="map-hidden" ... (todo tu modal de auth de siempre) ...</div>
 
-    <!-- Módulos ES: el navegador resuelve js/main.js y sus imports -->
-    <script type="module" src="js/main.js"></script>
-</body>
-</html>
     <!-- Módulos ES: el navegador resuelve js/main.js y sus imports -->
     <script type="module" src="js/main.js"></script>
 </body>
