@@ -12,126 +12,168 @@ import { obtenerUbicacion } from './geolocalizacion.js';
 import { mostrarSeccion } from './navegacion.js';
 import { log } from './logs.js';
 
-// Abrir mapa y dibujar rutas
-export function abrirMapa(rutaIndex = null) {
-    log('abrir-mapa', { ruta: rutaIndex });
-    // Oculta las demás secciones y muestra el mapa (también hace scrollTo(0,0))
-    mostrarSeccion('mapa');
-
-    // Inicializar mapa solo la primera vez
-    if (!estado.mapa) {
-        // Centro en la Facultad Experimental de Ciencias, LUZ
-        estado.mapa = L.map('map').setView([10.686, -71.645], 15);
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(estado.mapa);
+class MapController {
+    constructor(store = estado) {
+        this.estado = store;
+        this._map = null; // referencia local al mapa (igual que estado.mapa)
     }
 
-    const mapaActivo = estado.mapa;
-
-    // Limpiar capas previas
-    mapaActivo.eachLayer((layer) => {
-        if (layer instanceof L.Polyline || layer instanceof L.Marker) {
-            mapaActivo.removeLayer(layer);
+    _initMapIfNeeded() {
+        if (this.estado.mapa) {
+            this._map = this.estado.mapa;
+            return;
         }
-    });
+        // Centro por defecto en LUZ
+        this._map = L.map('map').setView([10.686, -71.645], 15);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this._map);
+        this.estado.mapa = this._map;
+    }
 
-    estado.userMarker = null;
-    estado.trazaLinea = null;
-    estado.popupsRuta = {};
+    _clearPreviousLayers() {
+        if (!this._map) return;
+        this._map.eachLayer((layer) => {
+            if (layer instanceof L.Polyline || layer instanceof L.Marker) {
+                this._map.removeLayer(layer);
+            }
+        });
+        // reset estado relacionado con capas/mapa
+        this.estado.userMarker = null;
+        this.estado.trazaLinea = null;
+        this.estado.popupsRuta = {};
+    }
 
-    // Forzar recálculo del lienzo de Leaflet para evitar descuadres en móviles
-    setTimeout(() => {
-        mapaActivo.invalidateSize();
-        if (rutaIndex !== null && misRutas[rutaIndex]) {
-            const coordInicio = misRutas[rutaIndex].coords[0];
-            mapaActivo.flyTo(coordInicio, 16, { duration: 1.5 });
-        }
-    }, 200);
+    _flyToStartIfNeeded(rutaIndex) {
+        if (!this._map) return;
+        setTimeout(() => {
+            this._map.invalidateSize();
+            if (rutaIndex !== null && misRutas[rutaIndex]) {
+                const coordInicio = misRutas[rutaIndex].coords[0];
+                this._map.flyTo(coordInicio, 16, { duration: 1.5 });
+            }
+        }, 200);
+    }
 
-    // Dibujar rutas y ajustar vista
-    const allCoords = [];
+    _drawRoutes(rutaIndex = null) {
+        if (!this._map) return;
+        const allCoords = [];
+        const rutasAProcesar = rutaIndex !== null ? [misRutas[rutaIndex]] : misRutas;
 
-    const rutasAProcesar = rutaIndex !== null ? [misRutas[rutaIndex]] : misRutas;
+        rutasAProcesar.forEach((ruta, idx) => {
+            // Determinar índice real en misRutas
+            const currentIdx = rutaIndex !== null ? rutaIndex : idx;
 
-    rutasAProcesar.forEach((ruta, idx) => {
-        // Polilínea de la ruta
-        L.polyline(ruta.coords, {
-            color: '#FFFE42', // Color primario
-            weight: 6,
-            opacity: 0.8,
-            lineCap: 'round',
-            lineJoin: 'round'
-        }).addTo(mapaActivo);
+            // Polilínea de la ruta
+            L.polyline(ruta.coords, {
+                color: '#FFFE42',
+                weight: 6,
+                opacity: 0.8,
+                lineCap: 'round',
+                lineJoin: 'round'
+            }).addTo(this._map);
 
-        allCoords.push(...ruta.coords);
+            allCoords.push(...ruta.coords);
 
-        const currentIdx = rutaIndex !== null ? rutaIndex : idx;
+            const estaActiva = this.estado.actividad && this.estado.actividad.activa && this.estado.actividad.rutaIdx === currentIdx;
 
-        const estaActiva = estado.actividad && estado.actividad.activa && estado.actividad.rutaIdx === currentIdx;
-
-    const markerStyle = L.divIcon({
-        className: estaActiva ? 'custom-marker activo' : 'custom-marker',
-        iconSize: [15, 15],
-        iconAnchor: [7, 7]
-    });
-
-        // Contenido del popup: elegir tipo o ver el cronómetro
-        const popupContent = document.createElement('div');
-        popupContent.innerHTML = `
-            <b>${ruta.nombre}</b><br>
-            <div id="inicio-${currentIdx}">
-                <button class="popup-btn" data-tipo="trote">🏃 Trote</button>
-                <button class="popup-btn" data-tipo="carrera" style="margin-top:6px;">⚡ Carrera</button>
-            </div>
-            <div id="timer-box-${currentIdx}" style="display:none; margin-top:10px; text-align:center;">
-                <span id="tipo-${currentIdx}" class="popup-tipo"></span><br>
-                <span id="time-${currentIdx}" style="font-size: 1.5rem; font-weight: bold;">00:00</span><br>
-                <button id="stop-${currentIdx}" class="popup-btn" style="background-color: #ff4d4d; color: white;">Detener</button>
-            </div>
-        `;
-
-        // Botones Trote / Carrera → inician la actividad
-        popupContent.querySelectorAll(`#inicio-${currentIdx} button`).forEach((btn) => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                iniciarActividad(currentIdx, btn.dataset.tipo);
+            const markerStyle = L.divIcon({
+                className: estaActiva ? 'custom-marker activo' : 'custom-marker',
+                iconSize: [15, 15],
+                iconAnchor: [7, 7]
             });
+
+            // Contenido del popup: elegir tipo o ver el cronómetro
+            const popupContent = document.createElement('div');
+            popupContent.innerHTML = `
+                <b>${ruta.nombre}</b><br>
+                <div id="inicio-${currentIdx}">
+                    <button class="popup-btn" data-tipo="trote">🏃 Trote</button>
+                    <button class="popup-btn" data-tipo="carrera" style="margin-top:6px;">⚡ Carrera</button>
+                </div>
+                <div id="timer-box-${currentIdx}" style="display:none; margin-top:10px; text-align:center;">
+                    <span id="tipo-${currentIdx}" class="popup-tipo"></span><br>
+                    <span id="time-${currentIdx}" style="font-size: 1.5rem; font-weight: bold;">00:00</span><br>
+                    <button id="stop-${currentIdx}" class="popup-btn" style="background-color: #ff4d4d; color: white;">Detener</button>
+                </div>
+            `;
+
+            // Botones Trote / Carrera → inician la actividad
+            const inicioGroup = popupContent.querySelector(`#inicio-${currentIdx}`);
+            if (inicioGroup) {
+                inicioGroup.querySelectorAll('button').forEach((btn) => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        iniciarActividad(currentIdx, btn.dataset.tipo);
+                    });
+                });
+            }
+
+            // Botón Detener (proteger con condicional)
+            const stopBtn = popupContent.querySelector(`#stop-${currentIdx}`);
+            if (stopBtn) {
+                stopBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    detenerActividad();
+                });
+            }
+
+            // Registrar el popup para poder actualizarlo aunque esté cerrado
+            this.estado.popupsRuta[currentIdx] = popupContent;
+
+            // Reflejar el estado actual (por si esta ruta ya está activa)
+            refrescarPopup(currentIdx);
+
+            // Marcadores de inicio y fin estilizados (comparten el mismo popup)
+            L.marker(ruta.coords[0], { icon: markerStyle }).addTo(this._map)
+                .bindPopup(popupContent);
+            L.marker(ruta.coords[ruta.coords.length - 1], { icon: markerStyle }).addTo(this._map)
+                .bindPopup(popupContent);
         });
 
-        // Botón Detener
-        popupContent.querySelector(`#stop-${currentIdx}`).addEventListener('click', (e) => {
-            e.stopPropagation();
-            detenerActividad();
-        });
-
-        // Registrar el popup: así podemos actualizarlo aunque esté cerrado
-        estado.popupsRuta[currentIdx] = popupContent;
-
-        // Reflejar el estado actual (por si esta ruta ya está activa)
-        refrescarPopup(currentIdx);
-
-        // Marcadores de inicio y fin estilizados (comparten el mismo popup)
-        L.marker(ruta.coords[0], { icon: markerStyle }).addTo(mapaActivo)
-            .bindPopup(popupContent);
-        L.marker(ruta.coords[ruta.coords.length - 1], { icon: markerStyle }).addTo(mapaActivo)
-            .bindPopup(popupContent);
-    });
-
-    if (allCoords.length > 0) {
-        mapaActivo.fitBounds(allCoords, { padding: [50, 50] });
+        if (allCoords.length > 0) {
+            this._map.fitBounds(allCoords, { padding: [50, 50] });
+        }
+        this._map.invalidateSize();
     }
-    mapaActivo.invalidateSize();
 
-    // Redibujar la traza si había una actividad en curso
-    refrescarTraza();
+    abrirMapa(rutaIndex = null) {
+        log('abrir-mapa', { ruta: rutaIndex });
+        // Mostrar la sección 'mapa' (oculta otras secciones)
+        mostrarSeccion('mapa');
 
-    // Localizar al usuario sin centrar (el mapa se ajusta a las rutas)
-    obtenerUbicacion(false);
+        // Inicializar mapa si hace falta
+        this._initMapIfNeeded();
+
+        // Limpiar capas previas y estado relacionado
+        this._clearPreviousLayers();
+
+        // Forzar recálculo y posiblemente volar al inicio
+        this._flyToStartIfNeeded(rutaIndex);
+
+        // Dibujar rutas (una o todas)
+        this._drawRoutes(rutaIndex);
+
+        // Redibujar la traza si había una actividad en curso
+        refrescarTraza();
+
+        // Localizar al usuario sin centrar (el mapa se ajusta a las rutas)
+        obtenerUbicacion(false);
+    }
+
+    cerrarMapa() {
+        mostrarSeccion('inicio');
+    }
 }
 
-// Cerrar el mapa y volver a la portada.
-// NOTA: aquí antes se guardaba una sesión falsa ("Carrera - Ruta Perímetro
-// LUZ") cada vez que se cerraba el mapa, aunque no hubiera actividad.
-// Ahora solo se guarda en detenerActividad(), con datos reales.
+// Exportar singleton mantenido por el módulo
+export const mapController = new MapController();
+
+// Compatibilidad con la API antigua
+export function abrirMapa(rutaIndex = null) {
+    return mapController.abrirMapa(rutaIndex);
+}
+
 export function cerrarMapa() {
-    mostrarSeccion('inicio');
+    return mapController.cerrarMapa();
 }
+
+export { MapController };
