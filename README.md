@@ -4,7 +4,7 @@ Aplicación web de seguimiento de running: rutas predefinidas en Maracaibo, mapa
 actividades con cronómetro (trote/carrera) e historial de sesiones.
 
 Proyecto académico de Ingeniería de Software — frontend puro (HTML + CSS + JavaScript),
-sin frameworks ni backend. Mapas con [Leaflet](https://leafletjs.com/) + OpenStreetMap.
+sin frameworks, Utiliza Vercel para hostear la página y Supabase como Backend. Mapas con [Leaflet](https://leafletjs.com/) + OpenStreetMap.
 
 ## Cómo ejecutarla
 
