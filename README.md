@@ -43,7 +43,6 @@ La geolocalización solo funciona en contextos seguros (HTTPS o `localhost`).
 │   ├── historial.js      localStorage: guardado, lectura, render y migración
 │   ├── tema.js           modo oscuro persistente (clave `runwell-tema`)
 │   └── main.js           punto de entrada: conecta botones ↔ módulos
-└── docs/diagrama-casos-uso.md
 ```
 
 Dependencias (sin ciclos): `datos/util/estado/dom` → `historial` → `actividad` →
