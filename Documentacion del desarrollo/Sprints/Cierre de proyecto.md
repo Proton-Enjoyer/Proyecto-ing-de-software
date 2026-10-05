@@ -33,6 +33,7 @@
 - Diseño modular y orden de importación que evita efectos secundarios en el arranque — solo ejecutar funciones que modifican `estado` en tiempo de ejecución.
 - Implementación de cooldown y chequeos geométricos robustos (colisión punto-segmento en metros) para evitar prompts molestos.
 - Logs subidos en background cada 60 s y en eventos críticos, con fallback de silenciamiento para UX; se documentó cómo probar localmente (`__probe_logs.html`).
+- Utilizar Supabase como backend, localStorage para persistencia local y Supabase (BaaS) para logs y datos en la nube
 
 4. Mantenimiento necesario
 --------------------------
@@ -54,7 +55,7 @@ Recomendaciones de tareas de mantenimiento, su propósito y prioridad:
 
 5. Recomendaciones para futuras mejoras
 --------------------------------------
-- Backend ligero y autenticación: usar BaaS (Supabase/Auth) para guardar sesiones, historial centralizado, y permitir usuarios con perfiles y sincronización entre dispositivos.
+
 - Export/Import de historial: permitir CSV/JSON para análisis offline o migración.
 - Filtros y selección de rutas: UI para buscar/filtrar rutas por zona, distancia, dificultad y eventos asociados.
 - Estadísticas y dashboard: agregados por semana/mes (distancia total, tiempo total, ritmo medio) y gráficos.
@@ -64,19 +65,6 @@ Recomendaciones de tareas de mantenimiento, su propósito y prioridad:
 
 6. Conclusiones
 ---------------
-RunWell cumplió los objetivos principales pedagógicos y funcionales: aplicar conceptos de geolocalización en web, manipulación de mapas con Leaflet, trabajo modular con ES Modules, y persistencia local. El proyecto muestra un equilibrio entre UX (política de permisos, feedback en pantalla) y robustez técnica (migración de datos, modularidad).
+RunWell cumplió los objetivos principales pedagógicos y funcionales: La adopción de principios de Programación Orientada a Objetos (POO) en RunWell facilitó una arquitectura más modular y mantenible: separar responsabilidades en entidades como Geolocalizador, Gestor de Actividad, Historial y Gestor de Logs permitió encapsular estado y comportamiento, reducir efectos colaterales y mejorar la legibilidad del código. Gracias a constructores coherentes y métodos responsables de una sola tarea se simplificó la migración de formatos, las pruebas unitarias parciales y las extensiones futuras. La aplicación conceptos de geolocalización en web, manipulación de mapas con Leaflet y persistencia local. El proyecto muestra un equilibrio entre UX (política de permisos, feedback en pantalla) y robustez técnica (migración de datos, modularidad).
 
-Las principales limitaciones son el entorno sin backend (sin sincronización ni autenticación) y la variabilidad intrínseca de la geolocalización en navegadores y dispositivos. Para convertir RunWell en un producto, las prioridades son: integrar backend para persistencia y cuentas, ampliar pruebas en dispositivos reales y mejorar la observabilidad (logs/errores remitidos y visibles).
 
-Archivos relacionados
---------------------
-- js/estado.js
-- js/geolocalizacion.js
-- js/actividad.js
-- js/historial.js
-- js/logs.js
-- README.md
-
----
-
-Autor: Equipo de desarrollo — RunWell
