@@ -6,7 +6,7 @@ entrenamiento personalizadas en la ciudad de Maracaibo, junto con un seguimiento
 en tiempo real de cada sesión de carrera.
 
 La aplicación está construida como un frontend puro con HTML, CSS y JavaScript,
-sin frameworks ni backend. Para el mapeo y la visualización de rutas utiliza la
+sin frameworks la página se hostea en Vercel y utiliza Supabase como backend. Para el mapeo y la visualización de rutas utiliza la
 librería Leaflet junto con los mapas de OpenStreetMap.
 
 Funcionalidades actuales:
