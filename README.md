@@ -90,7 +90,7 @@ Dependencias (sin ciclos): `datos/util/estado/dom` → `historial` → `activida
   `avatars`), guardado de actividades (tabla `actividades`) y logs de la
   página (bucket `logs`).
 
-  # Seguridad en Supabase — Proyecto (documentación)
+  # Seguridad en Supabase
 
 Esta guía documenta las recomendaciones y políticas para asegurar el backend en Supabase del proyecto. Incluye: políticas RLS (Row Level Security) para tablas clave, configuración de Storage (buckets privados, metadata, signed URLs), manejo de claves y pruebas. Aplica los snippets SQL en la consola SQL de Supabase adaptando nombres de tablas/columnas según tu esquema.
 
