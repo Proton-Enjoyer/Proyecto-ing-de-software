@@ -1,10 +1,6 @@
 # Cierre del Proyecto — RunWell
 
-Fecha: 2026-10-05
 
-Resumen
--------
-Documento de cierre que resume los logros alcanzados, las dificultades encontradas, las soluciones aplicadas, las tareas de mantenimiento recomendadas y conclusiones finales del proyecto RunWell (aplicación web de seguimiento de running, frontend puro con Leaflet + OpenStreetMap).
 
 1. Logros
 ---------
