@@ -154,18 +154,6 @@ Importante: verificar permisos antes de crear signed URL para evitar leaks si al
 
 ---
 
-## Checklist para el repositorio (qué documentar / aplicar)
-- [ ] Habilitar RLS en tablas: runs, profiles, routes, logs, cualquier tabla con user_id.
-- [ ] Implementar políticas SELECT/INSERT/UPDATE/DELETE con auth.uid() y WITH CHECK.
-- [ ] Buckets privados en Storage; no usar buckets públicos para datos de usuario.
-- [ ] Añadir metadata.owner = auth.uid() al subir objetos; políticas sobre storage.objects.
-- [ ] Generar signed URLs desde servidor/Edge Functions (service_role).
-- [ ] Guardar service_role en secretos, no en el repo.
-- [ ] Tests: crear usuarios de prueba A/B y verificar que no se cruzan permisos.
-- [ ] Documentar en README dónde están las keys y el procedimiento para rotarlas.
-
----
-
 ## Pruebas y debugging de políticas
 - Crear usuarios de prueba en Supabase Auth y generar tokens.
 - Usar la pestaña SQL / Policies UI para probar consultas como distintos usuarios.
