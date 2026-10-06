@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RunWell</title>
+    <!-- Estilos por capas (el orden importa: variables → base → resto) -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/mapa.css">
+    <link rel="stylesheet" href="css/secciones.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script>
+window.__fase = 'carga';
+window.__errores = [];
+window.addEventListener('error', function (e) {
+    window.__errores.push({ fase: window.__fase, msg: String(e.message || ('error en ' + (e.target && e.target.src))), ln: e.lineno || 0 });
+}, true);
+window.addEventListener('unhandledrejection', function (e) {
+    window.__errores.push({ fase: window.__fase, msg: 'promise: ' + String(e.reason) });
+});
+</script>
+<script>
+// ===== Mock de permisos + geolocalización (antes de que cargue js/main.js) =====
+(function () {
+    var params = new URLSearchParams(location.search);
+    var esc = params.get('esc') || 'pendiente';
+    window.__esc = esc;
+    window.__geo = [];
+    window.__t0 = Date.now();
+    var LAT = 10.4804, LNG = -66.9036; // Caracas (lejos de las rutas de Maracaibo)
+
+    // --- navigator.permissions ---
+    var permState = esc === 'ok' ? 'granted' : (esc === 'denegado' ? 'denied' : 'prompt');
+    var statusObj = {
+        get state() { return permState; },
+        onchange: null,
+        name: 'geolocation'
+    };
+    window.__perm = { get estado() { return permState; } };
+    var pendientes = [];
+    window.__conceder = function () {
+        permState = 'granted';
+        var cola = pendientes.slice();
+        pendientes.length = 0;
+        cola.forEach(function (fn) { fn(); });
+        if (typeof statusObj.onchange === 'function') statusObj.onchange({ target: statusObj });
+    };
+    try {
+        Object.defineProperty(navigator, 'permissions', {
+            configurable: true,
+            value: { query: function () { return Promise.resolve(statusObj); } }
+        });
+    } catch (e) {}
+
+    // --- navigator.geolocation ---
+    function posObj() {
+        return {
+            coords: { latitude: LAT, longitude: LNG, accuracy: 12, altitude: null, altitudeAccuracy: null, heading: null, speed: null },
+            timestamp: Date.now()
+        };
+    }
+    function llamada(fn, ok, err, opts) {
+        var t0 = Date.now();
+        var timeout = opts && opts.timeout;
+        var reg = { fn: fn, esc: esc, timeout: timeout || null, abs: Date.now() - window.__t0, t: 0 };
+        window.__geo.push(reg);
+
+        function exito() {
+            reg.t = Date.now() - t0; reg.resultado = 'ok';
+            if (ok) ok(posObj());
+        }
+        function fallo(code, msg) {
+            reg.t = Date.now() - t0; reg.resultado = 'error ' + code;
+            if (err) err({ code: code, PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3, message: msg });
+        }
+
+        if (esc === 'denegado') {
+            setTimeout(function () { fallo(1, 'User rejected the request for Geolocation.'); }, 60);
+        } else if (esc === 'pendiente') {
+            // Nunca responde: solo "muere" si la app puso timeout (no debe hacerlo)
+            if (timeout) setTimeout(function () { fallo(3, 'La solicitud de ubicación expiró.'); }, timeout + 30);
+        } else if (esc === 'concede' && permState !== 'granted') {
+            // Espera a que el test llame a __conceder()
+            pendientes.push(exito);
+            if (timeout) setTimeout(function () {
+                var i = pendientes.indexOf(exito);
+                if (i >= 0) { pendientes.splice(i, 1); fallo(3, 'La solicitud de ubicación expiró.'); }
+            }, timeout + 30);
+        } else {
+            setTimeout(exito, 700);
+            if (fn === 'watchPosition') {
+                var iv = setInterval(function () { if (ok) ok(posObj()); }, 1500);
+                setTimeout(function () { clearInterval(iv); }, 60000);
+            }
+        }
+        return 1;
+    }
+    var geoMock = {
+        getCurrentPosition: function (ok, err, opts) { return llamada('getCurrentPosition', ok, err, opts); },
+        watchPosition: function (ok, err, opts) { return llamada('watchPosition', ok, err, opts); },
+        clearWatch: function () {}
+    };
+    try {
+        Object.defineProperty(navigator, 'geolocation', { configurable: true, value: geoMock });
+    } catch (e) { console.error('no se pudo mockear geolocation', e); }
+})();
+</script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">RunWell</div>
+            
+            <!-- Botón de las 3 líneas (Hamburguesa) para móviles -->
+            <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <!-- Lista de navegación con la clase nav-links añadida -->
+            <ul id="items" class="nav-links">
+                <li><a href="#" id="inicio-btn">Inicio</a></li>
+                <li><a href="#" id="eventos-btn">Eventos</a></li>
+                <li><a href="#" id="historial-btn">Historial</a></li>
+                <li>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </li>
+                <li><button id="cta-btn">Empezar</button></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <h1>Transforma tu cuerpo.</h1>
+            <p>Rutas personalizadas, seguimiento en tiempo real y resultados reales.</p>
+            <button id="hero-btn">Unete ahora</button>
+        </section>
+        
+        <section id="planes-section" class="planes-section hidden">
+            <h2>Próximos Eventos</h2>
+            <div class="planes-grid">
+                <!-- Se llenará dinámicamente desde js/eventos.js -->
+            </div>
+        </section>
+        <section id="historial-section" class="planes-section hidden">
+    <h2>Historial de Actividades</h2>
+    <div id="historial-lista" class="historial-grid"></div>
+    <div style="text-align: center; margin-top: 1.5rem;">
+      <button id="borrar-historial-btn" class="hidden">Limpiar Historial</button>
+    </div>
+  </section>
+    </main>
+    
+    <!-- Capa de mapa a pantalla completa (fuera del <main> para no heredar sus estilos) -->
+    <div id="map-container" class="map-hidden">
+      <button id="close-map">X</button>
+      <button id="locate-btn" title="Mi ubicación">📍</button>
+      <div id="map"></div>
+    </div>
+
+    <!-- Panel flotante: distancia y ritmo en vivo mientras hay actividad -->
+    <div id="hud-actividad" class="hud-hidden">
+        <div class="hud-cell">
+            <span class="hud-valor" id="hud-time">00:00</span>
+            <span class="hud-label">Tiempo</span>
+        </div>
+        <div class="hud-cell">
+            <span class="hud-valor" id="hud-dist">0.00</span>
+            <span class="hud-label">Kilómetros</span>
+        </div>
+        <div class="hud-cell">
+            <span class="hud-valor" id="hud-ritmo">--:--</span>
+            <span class="hud-label">min/km</span>
+        </div>
+    </div>
+
+    <!-- Prompt de proximidad: aparece cuando estás cerca de una ruta -->
+    <div id="proximity-prompt" class="proximity-hidden" role="alertdialog" aria-live="polite">
+        <button id="pp-close" class="pp-close" title="Cerrar">✕</button>
+        <p class="pp-title">¡Estás en <strong id="pp-ruta">—</strong>!</p>
+        <p class="pp-dist" id="pp-dist"></p>
+        <p class="pp-sub">¿Qué quieres iniciar?</p>
+        <div class="pp-actions">
+            <button id="pp-trote" class="pp-btn">🏃 Trote</button>
+            <button id="pp-carrera" class="pp-btn pp-btn-alt">⚡ Carrera</button>
+        </div>
+        <button id="pp-ignorar" class="pp-ignore">Ahora no</button>
+    </div>
+
+    <!-- Leaflet JS (global: se carga antes que los módulos de la app) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Módulos ES: el navegador resuelve js/main.js y sus imports -->
+    <script type="module" src="js/main.js"></script>
+
+<script>
+(async function () {
+const errores = window.__errores;
+const R = [];
+const log = (n, ok, extra) => R.push({ n, ok: !!ok, extra: extra === undefined ? null : extra });
+const w = ms => new Promise(r => setTimeout(r, ms));
+const $ = id => document.getElementById(id);
+const esc = window.__esc;
+const t0 = Date.now();
+const hayErrores = () => errores.length === 0;
+
+// Cronología de la alerta de GPS
+const alertas = [];
+const iv = setInterval(() => {
+    const a = $('alerta-gps');
+    if (a && !a.classList.contains('oculta')) {
+        const t = Date.now() - t0;
+        if (!alertas.length || alertas[alertas.length - 1].texto !== a.textContent) {
+            alertas.push({ t: t, texto: a.textContent, esInfo: a.classList.contains('info') });
+        }
+    }
+}, 300);
+
+const fallos = () => alertas.filter(a => !a.esInfo);
+
+async function enviar() {
+    clearInterval(iv);
+    const d = JSON.stringify({ esc, errores, alertas, geo: window.__geo, permiso: window.__perm && window.__perm.estado, resultados: R });
+    try { await fetch('/bc?d=' + encodeURIComponent(d)); } catch (e) {}
+}
+
+function abrirMapaDesdeEventos() {
+    $('eventos-btn').click();
+    const btn = document.querySelector('.planes-grid .event-card button');
+    if (btn) btn.click();
+}
+
+function centroDesdeTiles() {
+    const cont = $('map-container').getBoundingClientRect();
+    const cx = cont.left + cont.width / 2, cy = cont.top + cont.height / 2;
+    let mejor = null, mejorD = Infinity;
+    document.querySelectorAll('.leaflet-tile').forEach(t => {
+        const r = t.getBoundingClientRect();
+        if (cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom) {
+            const m = /\/(\d+)\/(\d+)\/(\d+)\.png/.exec(t.getAttribute('src') || '');
+            if (m) {
+                const z = +m[1], x = +m[2], y = +m[3];
+                const d = Math.abs((r.left + r.width / 2) - cx) + Math.abs((r.top + r.height / 2) - cy);
+                if (d < mejorD) { mejorD = d; mejor = { z, x, y }; }
+            }
+        }
+    });
+    if (!mejor) return null;
+    const n = Math.pow(2, mejor.z);
+    return { z: mejor.z, x: mejor.x, y: mejor.y };
+}
+
+function snap() {
+    const m = document.querySelector('.user-avatar-marker');
+    const r = m ? m.getBoundingClientRect() : null;
+    const c = $('map-container').getBoundingClientRect();
+    return {
+        vista: centroDesdeTiles(),
+        marcadorPx: r ? { x: Math.round(r.left + r.width / 2 - c.left), y: Math.round(r.top + r.height / 2 - c.top) } : null,
+        centroPx: { w: Math.round(c.width), h: Math.round(c.height) }
+    };
+}
+
+try {
+    if (esc === 'pendiente') {
+        await w(12000);
+        const fondo = window.__geo.filter(g => g.abs < 2000);
+        log('SIN-ALERTA-CON-PERMISO-PENDIENTE', fallos().length === 0, fallos());
+        log('fondo-sin-timeout', fondo.length > 0 && fondo.every(g => g.timeout === null), fondo);
+        log('fondo-sigue-pendiente', fondo.every(g => !g.resultado), fondo);
+        log('sin-errores-js', hayErrores(), errores);
+    } else if (esc === 'concede') {
+        await w(10500);
+        const antes = fallos().length;
+        window.__conceder(); // el usuario pulsa "Permitir"
+        await w(3500);
+        log('sin-alerta-antes-de-conceder', antes === 0, alertas);
+        log('SIN-ALERTA-TRAS-CONCEDER', fallos().length === 0, fallos());
+        abrirMapaDesdeEventos();
+        await w(3000);
+        log('MARCADOR-TRAS-CONCEDER', !!document.querySelector('.user-avatar-marker'));
+        log('sin-errores-js', hayErrores(), errores);
+    } else if (esc === 'ok') {
+        await w(1800);
+        abrirMapaDesdeEventos();
+        await w(2500);
+        log('mapa-abierto', $('map-container').className.indexOf('map-active') >= 0);
+        log('marcador-por-tracking', !!document.querySelector('.user-avatar-marker'));
+        const s1 = snap();
+        const geoAntes = window.__geo.length;
+        $('locate-btn').click();
+        // Muestrear la trayectoria del vuelo (1 muestra/s durante 4 s)
+        const trayectoria = [];
+        const tClick = Date.now();
+        while (Date.now() - tClick < 4000) {
+            await w(1000);
+            const s = snap();
+            trayectoria.push({ t: Date.now() - tClick, vista: s.vista, marcadorPx: s.marcadorPx });
+        }
+        const s2 = snap();
+        const boton = window.__geo.slice(geoAntes);
+        log('BOTON-LLAMO-GPS-OK', boton.length > 0 && boton[0].resultado === 'ok', boton);
+        log('boton-timeout-15s', boton.length > 0 && boton[0].timeout === 15000, boton);
+        log('TRAYECTORIA-VUELO', true, trayectoria);
+        log('vuelo-terminado-z15', s2.vista && s2.vista.z === 15, s2.vista);
+        if (s2.marcadorPx) {
+            const dx = Math.abs(s2.marcadorPx.x - s2.centroPx.w / 2);
+            const dy = Math.abs(s2.marcadorPx.y - s2.centroPx.h / 2);
+            log('MARCADOR-CENTRADO-TRAS-UBICACION', dx < 80 && dy < 80, { dx: Math.round(dx), dy: Math.round(dy) });
+        } else {
+            log('MARCADOR-CENTRADO-TRAS-UBICACION', false, 'sin marcador');
+        }
+        const info = alertas.filter(a => a.esInfo);
+        log('INFO-COORDENADAS-TOAST', info.length > 0 && /-?\d+\.\d{4,}/.test(info[0].texto) && /±\d+ m/.test(info[0].texto), info);
+        const um = document.querySelector('.user-avatar-marker');
+        if (um) um.click();
+        await w(500);
+        const pup = document.querySelector('.leaflet-popup');
+        log('POPUP-MUESTRA-COORDENADAS', !!pup && /±\d+ m/.test(pup.textContent) && /-?\d+\.\d{4,}/.test(pup.textContent), pup ? pup.textContent.trim() : null);
+        log('sin-alerta-gps', fallos().length === 0, fallos());
+        log('sin-errores-js', hayErrores(), errores);
+    } else if (esc === 'denegado') {
+        await w(2000);
+        log('SIN-ALERTA-AL-CARGAR', fallos().length === 0, fallos());
+        abrirMapaDesdeEventos();
+        await w(1500);
+        log('sin-alerta-al-abrir-mapa', fallos().length === 0, fallos());
+        $('locate-btn').click();
+        await w(1500);
+        log('ALERTA-AL-PULSAR-UBICACION', alertas.length > 0 && /candado|Actívalo/i.test(alertas[0].texto), alertas);
+        log('sin-errores-js', hayErrores(), errores);
+    }
+} catch (e) {
+    errores.push({ fase: 'PROBE', msg: String(e) });
+    log('PROBE-fallo', false, String(e));
+}
+await enviar();
+})();
+</script>
+</body>
+</html>

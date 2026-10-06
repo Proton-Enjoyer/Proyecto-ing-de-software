@@ -23,8 +23,30 @@ Pendiente de resolver **antes de la aprobación para transferencia**.
 - [ ] **4. UML actualizado del sistema final** — mínimo diagrama de clases y de
       casos de uso.
 - [ ] **5. Revisión de POO** — clases, encapsulación, herencia, relaciones de dominio.
-- [ ] **6. Documentar solo los patrones de diseño realmente implementados.**
-- [ ] **7. Documentación de pruebas y resultados, con evidencia verificable.**
+- [x] **6. Documentar solo los patrones de diseño realmente implementados.**
+      → `Sprints/Patrones de diseño.md`: Observer, Repository, singleton por
+      módulo, herencia/polimorfismo con encapsulación e inyección de
+      dependencias — cada uno con su archivo, su porqué y su verificación en
+      el código. Sección aparte con los que **no** están implementados
+      (Template Method, Strategy, Factory, Facade, MVC) para que nadie los
+      asuma. Puntero en `README.md`. Verificado que ningún `.docx` ni
+      `RunWELL.pdf` menciona patrones: no hay nada que corregir en los
+      documentos del usuario. De paso se corrigió el "9 servicios heredan de
+      `ServicioBase`" → **10**, que repetían `README.md`, `AGENTS.md` y
+      `Cierre de proyecto.md`.
+- [x] **7. Documentación de pruebas y resultados, con evidencia verificable.**
+      → `Sprints/Pruebas.md`: qué se probó (tabla arnés → alcance → checks),
+      cómo reproducirlo, entorno de la corrida y — honestamente — lo que
+      **no** cubre (solo Firefox desktop, GPS mockeado, sin pruebas de carga
+      ni de accesibilidad). Evidencia cruda check por check en
+      `Sprints/Pruebas/evidencia/` (salida sin editar, una corrida por
+      archivo + `resumen.json`). Para que la evidencia sea reproducible, los
+      arneses `__*.html` dejan de estar ignorados por git y se versionan
+      junto a `pruebas/servidor.py` y `pruebas/correr.py`: dos comandos
+      repiten la pasada. Nueva sección "Pruebas" en `README.md`; `AGENTS.md`
+      al día (y sin la mención a *Template Method*, que el punto 6 excluye).
+      **Pasada 2026-10-06: 156/156 checks (geo 23, popup 30, e2e 37, POO 58,
+      logs 8), 0 fallos, 0 errores de consola.**
 - [ ] **8. Capturas/evidencias de las principales funcionalidades.**
 - [x] **9. Cierre del proyecto** — logros, dificultades, soluciones,
       mantenimiento, recomendaciones y conclusiones.
@@ -63,6 +85,7 @@ Pendiente de resolver **antes de la aprobación para transferencia**.
 - **5 (POO)**: hecho y commiteado en `6a2a377`. 17 clases, jerarquía real.
 - **1 (README)**: `README.md` y `AGENTS.md` ya actualizados en `6a2a377`
   (Supabase y estructura). Falta revisar el resto de la documentación.
-- **6 (patrones)**: los patrones ya existen en el código, falta escribirlos.
-- **7 (pruebas)**: los arneses existen pero son temporales e ignorados por git;
-  no hay evidencia versionada.
+- **6 (patrones)**: hecho, pendiente de commit — `Sprints/Patrones de
+  diseño.md` + puntero en `README.md` + corrección de "9 → 10 clases de
+  servicio" en `README.md`, `AGENTS.md` y `Cierre de proyecto.md`.
+- **7 (pruebas)**: hecho, pendiente de commit — ver el punto 7 de arriba.

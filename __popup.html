@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RunWell</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+    <link rel="manifest" href="icons/site.webmanifest">
+    <!-- Estilos por capas (el orden importa: variables → base → resto) -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/mapa.css">
+    <link rel="stylesheet" href="css/secciones.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="css/chatbot.css">
+<script>
+try { localStorage.removeItem('runwell-historial'); localStorage.removeItem('runwell-tema'); } catch(e){}
+window.__errores = [];
+window.addEventListener('error', e => window.__errores.push(String(e.message || ('recurso: ' + (e.target && (e.target.src || e.target.href))))), true);
+window.addEventListener('unhandledrejection', e => window.__errores.push('promise: ' + String(e.reason)));
+</script>
+</head>
+<body>
+    <header>
+       <nav>
+            <div class="nav-left" style="display: flex; align-items: center; gap: 12px;">
+                <!-- Círculo de perfil (arriba a la izquierda) -->
+                <div id="user-avatar-container" title="Perfil de usuario">
+                    <img id="user-avatar-img" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); display: none; cursor: pointer;">
+                </div>
+                <div class="logo">RunWell</div>
+            </div>
+            
+            <!-- Botón de las 3 líneas (Hamburguesa) para móviles -->
+            <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <!-- Lista de navegación -->
+            <ul id="items" class="nav-links">
+                <li><a href="#" id="inicio-btn">Inicio</a></li>
+                <li><a href="#" id="eventos-btn">Eventos</a></li>
+                <li><a href="#" id="historial-btn">Historial</a></li>
+                <!-- Opciones de autenticación -->
+                <li><a href="#" id="login-nav-btn">Iniciar Sesión</a></li>
+                <li><a href="#" id="register-nav-btn">Registrarse</a></li>
+                <li id="logout-li" class="hidden"><a href="#" id="logout-nav-btn" style="color: #ff4d4d;">Cerrar Sesión</a></li>
+                <li>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="slider"></span>
+                    </label>
+                </li>
+                <li><button id="cta-btn">Empezar</button></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="hero">
+            <h1>Transforma tu cuerpo.</h1>
+            <p>Rutas personalizadas, seguimiento en tiempo real y resultados reales.</p>
+            <button id="hero-btn">Unete ahora</button>
+        </section>
+        
+        <section id="planes-section" class="planes-section hidden">
+            <h2>Próximos Eventos</h2>
+            <div class="planes-grid">
+                <!-- Se llenará dinámicamente desde js/eventos.js -->
+            </div>
+        </section>
+
+        <section id="historial-section" class="planes-section hidden">
+            <h2>Historial de Actividades</h2>
+            <div id="historial-lista" class="historial-grid"></div>
+            <div style="text-align: center; margin-top: 1.5rem;">
+              <button id="borrar-historial-btn" class="hidden">Limpiar Historial</button>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Capa de mapa a pantalla completa (fuera del <main> para no heredar sus estilos) -->
+    <div id="map-container" class="map-hidden">
+      <button id="close-map" aria-label="Cerrar mapa">X</button>
+      <button id="locate-btn" title="Mi ubicación">📍</button>
+      <div id="map"></div>
+    </div>
+
+    <!-- Panel flotante: distancia y ritmo en vivo mientras hay actividad -->
+    <div id="hud-actividad" class="hud-hidden">
+        <div class="hud-cell">
+            <span class="hud-valor" id="hud-time">00:00</span>
+            <span class="hud-label">Tiempo</span>
+        </div>
+        <div class="hud-cell">
+            <span class="hud-valor" id="hud-dist">0.00</span>
+            <span class="hud-label">Kilómetros</span>
+        </div>
+        <div class="hud-cell">
+            <span class="hud-valor" id="hud-ritmo">--:--</span>
+            <span class="hud-label">min/km</span>
+        </div>
+    </div>
+
+    <!-- Prompt de proximidad: aparece cuando estás cerca de una ruta -->
+    <div id="proximity-prompt" class="proximity-hidden" role="alertdialog" aria-live="polite">
+        <button id="pp-close" class="pp-close" title="Cerrar">✕</button>
+        <p class="pp-title">¡Estás en <strong id="pp-ruta">—</strong>!</p>
+        <p class="pp-dist" id="pp-dist"></p>
+        <p class="pp-sub">¿Qué quieres iniciar?</p>
+        <div class="pp-actions">
+            <button id="pp-trote" class="pp-btn">🏃 Trote</button>
+            <button id="pp-carrera" class="pp-btn pp-btn-alt">⚡ Carrera</button>
+        </div>
+        <button id="pp-ignorar" class="pp-ignore">Ahora no</button>
+    </div>
+
+    <!-- CHATBOT FLOTANTE DE IA PARA LA PROFESORA -->
+    <div id="chatbot-toggle-btn" class="chatbot-btn" aria-hidden="false">
+        💬 Asistente IA
+    </div>
+
+    <div id="chatbot-container" class="chatbot-box hidden" aria-hidden="true">
+        <div class="chatbot-header">
+            <span>RunWell Bot 🤖</span>
+            <button id="chatbot-close" aria-label="Cerrar chatbot">✕</button>
+        </div>
+        <div id="chatbot-messages" class="chatbot-messages">
+            <div class="bot-msg">¡Hola! Soy tu asistente de RunWell. ¿En qué te ayudo con tus rutas o entrenamientos?</div>
+        </div>
+        <div class="chatbot-input-area">
+            <input type="text" id="chatbot-input" placeholder="Escribe tu duda..." />
+            <button id="chatbot-send">Enviar</button>
+        </div>
+    </div>
+
+    <!-- MODAL / CONTENEDOR DE AUTENTICACIÓN -->
+    <div id="auth-modal" class="auth-modal hidden" role="dialog" aria-hidden="true">
+        <div class="auth-content">
+            <button id="close-auth-modal" class="auth-close" aria-label="Cerrar">✕</button>
+
+            <!-- FORMULARIO DE INICIAR SESIÓN -->
+            <div id="login-form-container">
+                <h2 style="text-align: center; margin-bottom: 20px;">Iniciar Sesión</h2>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <img id="login-preview-avatar" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2280%22%20height%3D%2280%22%3E%3Crect%20width%3D%2280%22%20height%3D%2280%22%20fill%3D%22%23007bff%22/%3E%3Ccircle%20cx%3D%2240%22%20cy%3D%2231%22%20r%3D%2213%22%20fill%3D%22%23ffffff%22/%3E%3Cpath%20d%3D%22M40%2048c-13%200-24%208-24%2018v14h48V66c0-10-11-18-24-18z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E" alt="Perfil" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary);">
+                </div>
+                <form id="login-form" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Correo Electrónico</label>
+                        <input type="email" id="login-email" required style="width: 100%; padding: 10px; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Contraseña</label>
+                        <input type="password" id="login-password" required style="width: 100%; padding: 10px; border-radius: 8px;">
+                    </div>
+                    <button type="submit" style="margin-top: 10px; width: 100%; padding: 12px; font-size: 1rem;">Entrar</button>
+                </form>
+                <p style="text-align: center; margin-top: 15px; font-size: 0.9rem;">
+                    ¿No tienes cuenta? <a href="#" id="switch-to-register" style="color: var(--primary); font-weight: bold;">Regístrate aquí</a>
+                </p>
+            </div>
+
+            <!-- FORMULARIO DE REGISTRO (oculto por defecto) -->
+            <div id="register-form-container" class="hidden">
+                <h2 style="text-align: center; margin-bottom: 20px;">Crear Cuenta</h2>
+                <form id="register-form" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Foto de Perfil</label>
+                        <div style="position: relative; width: 80px; height: 80px; margin: 0 auto; border-radius: 50%; overflow: hidden; border: 3px solid var(--primary); cursor: pointer;" onclick="document.getElementById('reg-avatar').click();">
+                            <img id="reg-preview-avatar" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2280%22%20height%3D%2280%22%3E%3Crect%20width%3D%2280%22%20height%3D%2280%22%20fill%3D%22%23007bff%22/%3E%3Ccircle%20cx%3D%2240%22%20cy%3D%2231%22%20r%3D%2213%22%20fill%3D%22%23ffffff%22/%3E%3Cpath%20d%3D%22M40%2048c-13%200-24%208-24%2018v14h48V66c0-10-11-18-24-18z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <input type="file" id="reg-avatar" accept="image/*" style="display: none;">
+                        <span style="font-size: 0.8rem; color: gray; display: block; margin-top: 5px;">Haz clic en el círculo para elegir foto</span>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Nombre</label>
+                        <input type="text" id="reg-nombre" required style="width: 100%; padding: 8px; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Apellido</label>
+                        <input type="text" id="reg-apellido" required style="width: 100%; padding: 8px; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Correo Electrónico</label>
+                        <input type="email" id="reg-email" required style="width: 100%; padding: 8px; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Contraseña</label>
+                        <input type="password" id="reg-password" required style="width: 100%; padding: 8px; border-radius: 8px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Confirmar Contraseña</label>
+                        <input type="password" id="reg-confirm-password" required style="width: 100%; padding: 8px; border-radius: 8px;">
+                    </div>
+                    <button type="submit" style="margin-top: 5px; width: 100%; padding: 12px; font-size: 1rem;">Registrarse</button>
+                </form>
+                <p style="text-align: center; margin-top: 15px; font-size: 0.9rem;">
+                    ¿Ya tienes cuenta? <a href="#" id="switch-to-login" style="color: var(--primary); font-weight: bold;">Inicia Sesión</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS (global: se carga antes que los módulos de la app) -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Módulos ES: el navegador resuelve js/main.js y sus imports -->
+    <script type="module" src="js/main.js"></script>
+
+<script type="module">
+(async function () {
+const R = [];
+const log = (n, ok, extra) => R.push({ n, ok: !!ok, extra: extra === undefined ? null : extra });
+const w = ms => new Promise(r => setTimeout(r, ms));
+const $ = id => document.getElementById(id);
+const visible = el => !!el && getComputedStyle(el).display !== 'none';
+
+try {
+await w(1200);
+log('app-cargada', !!globalThis.__logs);
+log('sin-errores-en-carga', window.__errores.length === 0, window.__errores);
+
+// --- 1. Abrir mapa desde Inicio y abrir popup
+$('cta-btn').click();
+await w(1600);
+const marker = document.querySelector('.custom-marker');
+log('marcadores-creados', document.querySelectorAll('.custom-marker').length >= 8,
+    document.querySelectorAll('.custom-marker').length);
+marker.click();
+await w(600);
+log('popup-abre', visible(document.querySelector('.leaflet-popup')));
+
+// --- 2. Iniciar trote
+document.querySelector('.leaflet-popup [data-tipo="trote"]').click();
+await w(900);
+log('HUD-visible', visible($('hud-actividad')));
+
+// *** ESTE ES EL ARREGLO: el popup debe seguir abierto con el cronometro ***
+const pop = document.querySelector('.leaflet-popup');
+log('POPUP-SIGUE-ABIERTO-TRAS-INICIAR', visible(pop));
+log('popup-muestra-cronometro', !!pop && /00:0/.test(pop.textContent), pop && pop.textContent.replace(/\s+/g,' ').trim().slice(0,70));
+log('popup-oculta-botones-inicio', !!pop && getComputedStyle(pop.querySelector('[id^="inicio-"]')).display === 'none');
+log('popup-muestra-boton-detener', !!pop && !!pop.querySelector('[id^="stop-"]'));
+log('popup-tipo-visible', !!pop && /Trote/.test(pop.textContent));
+log('marcador-actualizado', !!document.querySelector('.custom-marker.activo'));
+
+// --- 3. El cronometro se ve avanzar DENTRO del popup
+await w(2400);
+log('POPUP-CRONOMETRO-AVANZA', $('time-0').textContent !== '00:00', $('time-0').textContent);
+log('popup-cronometro-coincide-hud', document.querySelector('.leaflet-popup [id^="time-"]').textContent === $('hud-time').textContent,
+    { popup: document.querySelector('.leaflet-popup [id^="time-"]').textContent, hud: $('hud-time').textContent });
+
+// --- 4. Detener directamente desde el popup (sin tocar otro marcador)
+const btnStop = document.querySelector('.leaflet-popup [id^="stop-"]');
+log('DETENER-VISIBLE-SIN-REABRIR', !!btnStop);
+btnStop.click();
+await w(900);
+log('HUD-oculto-al-detener', !visible($('hud-actividad')));
+log('actividad-detida', (await import('./js/estado.js')).estado.actividad.activa === false);
+
+// --- 5. Tras detener, el popup vuelve a ofrecer Trote/Carrera
+const pop2 = document.querySelector('.leaflet-popup');
+log('popup-tras-detener-abierto', visible(pop2), pop2 && pop2.textContent.replace(/\s+/g,' ').trim().slice(0,70));
+log('popup-tras-detener-ofrece-tipos',
+    !!pop2 && !!pop2.querySelector('[data-tipo="trote"]') &&
+    !!pop2.querySelector('[data-tipo="carrera"]') &&
+    getComputedStyle(pop2.querySelector('[id^="inicio-"]')).display !== 'none' &&
+    getComputedStyle(pop2.querySelector('[id^="timer-box-"]')).display === 'none',
+    pop2 && { inicio: getComputedStyle(pop2.querySelector('[id^="inicio-"]')).display,
+              timer: getComputedStyle(pop2.querySelector('[id^="timer-box-"]')).display });
+// El HUD queda oculto tras detener (conserva el ultimo valor, es el
+// comportamiento previo: se refresca al iniciar la siguiente sesion).
+log('HUD-oculto-tras-detener', !visible($('hud-actividad')), $('hud-time').textContent);
+
+// --- 6. Historial
+let h = null; try { h = JSON.parse(localStorage.getItem('runwell-historial')); } catch(e){}
+log('historial-1-sesion', Array.isArray(h) && h.length === 1, h);
+log('historial-tipo-Trote', h && h[0] && h[0].tipo === 'Trote');
+log('historial-campos', h && h[0] && ['id','tipo','ruta','fecha','tiempo','distancia','ritmo'].every(k => k in h[0]));
+
+// --- 7. Ciclo completo: segundo intento desde el prompt de proximidad
+const E = await import('./js/estado.js');
+const A = await import('./js/actividad.js');
+const M = await import('./js/mapa.js');
+A.iniciarActividad(1, 'carrera');
+await w(900);
+log('carrera-popup-abierto', visible(document.querySelector('.leaflet-popup')));
+log('carrera-tipo-en-popup', /Carrera/.test(document.querySelector('.leaflet-popup').textContent));
+A.detenerActividad();
+await w(600);
+h = JSON.parse(localStorage.getItem('runwell-historial') || '[]');
+log('historial-2-sesiones', h.length === 2, h.length);
+log('historial-tipo-Carrera', h[0] && h[0].tipo === 'Carrera', h[0] && h[0].tipo);
+
+// --- 8. abrirPopupRuta es seguro sin ruta valida
+M.abrirPopupRuta(999);
+M.abrirPopupRuta(null);
+await w(300);
+log('abrirPopupRuta-no-rompe', window.__errores.length === 0, window.__errores);
+
+// --- 9. Cerrar mapa no deja actividad colgada
+A.iniciarActividad(0, 'trote');
+await w(500);
+$('close-map').click();
+await w(500);
+A.detenerActividad();
+await w(400);
+log('cerrar-mapa-no-cola-sesion', (await import('./js/estado.js')).estado.actividad.activa === false);
+h = JSON.parse(localStorage.getItem('runwell-historial') || '[]');
+log('sin-sesion-fantasma', h.length === 3, h.length);
+
+// --- 10. Sin errores de consola al final
+log('SIN-ERRORES-JS', window.__errores.length === 0, window.__errores);
+
+} catch (e) {
+  log('EXCEPCION-HARNESS', false, String(e) + ' | ' + (e.stack||'').split('\n').slice(0,2).join(' '));
+}
+const ok = R.filter(x => x.ok).length;
+try { await fetch('/bc?d=' + encodeURIComponent(JSON.stringify({ ok, total: R.length, R }))); } catch(e){}
+})();
+</script>
+</body>
+</html>

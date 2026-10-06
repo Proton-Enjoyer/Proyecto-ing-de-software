@@ -1,0 +1,58 @@
+[
+ {
+  "caso": "geo-pendiente",
+  "pagina": "__geo.html?esc=pendiente",
+  "ok": 4,
+  "total": 4,
+  "fallos": []
+ },
+ {
+  "caso": "geo-concede",
+  "pagina": "__geo.html?esc=concede",
+  "ok": 4,
+  "total": 4,
+  "fallos": []
+ },
+ {
+  "caso": "geo-ok",
+  "pagina": "__geo.html?esc=ok",
+  "ok": 11,
+  "total": 11,
+  "fallos": []
+ },
+ {
+  "caso": "geo-denegado",
+  "pagina": "__geo.html?esc=denegado",
+  "ok": 4,
+  "total": 4,
+  "fallos": []
+ },
+ {
+  "caso": "popup",
+  "pagina": "__popup.html",
+  "ok": 30,
+  "total": 30,
+  "fallos": []
+ },
+ {
+  "caso": "e2e",
+  "pagina": "__e2e.html",
+  "ok": 37,
+  "total": 37,
+  "fallos": []
+ },
+ {
+  "caso": "poo",
+  "pagina": "__poo.html",
+  "ok": 58,
+  "total": 58,
+  "fallos": []
+ },
+ {
+  "caso": "logs",
+  "pagina": "__probe_logs.html",
+  "ok": 8,
+  "total": 8,
+  "fallos": []
+ }
+]

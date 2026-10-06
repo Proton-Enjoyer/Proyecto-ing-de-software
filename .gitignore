@@ -1,10 +1,13 @@
-# Arnés temporal de pruebas (se regenera desde index.html)
-__*.html
+# Arnés de pruebas: versionado a propósito, porque ES la evidencia
+# verificable de "Documentacion del desarrollo/Sprints/Pruebas.md"
+# (quien la revise puede volver a correrlo). No volver a ignorarlo.
 
 # Sistema / editores
 .DS_Store
 *.log
 .vscode/
+# lock temporal de LibreOffice mientras hay un .docx/.pdf abierto
+.~lock.*
 # NOTA: supabase-config.js SÍ se versiona a propósito.
 # Contiene SUPABASE_URL y SUPABASE_KEY, donde la key es de tipo
 # `sb_publishable_...`: una clave pública de cliente que Supabase

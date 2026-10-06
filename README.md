@@ -102,6 +102,25 @@ declaraciones de función).
   conservan en buffer y se reintentan; los fallos de subida son silenciosos en
   pantalla (solo consola).
 
+## Pruebas
+
+La validación se hace con **arneses de regresión** (`__*.html` en la raíz del
+repo) que cargan la app real en Firefox headless, la ejercitan con clics y
+llamadas reales y capturan cualquier `window.onerror`. Última pasada completa
+(2026-10-06): **156/156 checks, 0 fallos, 0 errores de consola**, cubriendo:
+
+- permisos y geolocalización (4 escenarios con `navigator.geolocation` y
+  `navigator.permissions` mockeados),
+- popup de actividad (cronómetro, HUD, historial),
+- recorrido extremo a extremo (navegación, mapa, historial + migración de
+  claves antiguas, tema oscuro, chatbot, modal de auth, GPS),
+- POO (Observer, contrato de `Repositorio`, jerarquías, encapsulación) y
+- `Logger` (buffer, crashes y subida real a Supabase).
+
+Con cómo reproducirla (`pruebas/servidor.py` + `pruebas/correr.py`) y la
+evidencia cruda check por check, en
+`Documentacion del desarrollo/Sprints/Pruebas.md`.
+
 ## Datos guardados (localStorage)
 
 | Clave | Contenido |
