@@ -136,7 +136,9 @@ evidencia cruda check por check, en
   esquema, políticas RLS/Storage y verificación de seguridad.
 - `Documentacion del desarrollo/Sprints/Cierre de proyecto.md` — cierre:
   logros, dificultades, decisiones, mantenimiento y conclusiones.
-- `docs/diagrama-casos-uso.md` — casos de uso del sistema final (Mermaid).
+- `Documentacion del desarrollo/Sprints/Diagrama de clases Final.png` y
+  `Sprints/Diagrama de Casos de Uso Final.png` — UML del sistema final
+  (clases y casos de uso), exportados desde código Mermaid.
 
 ## Datos guardados (localStorage)
 

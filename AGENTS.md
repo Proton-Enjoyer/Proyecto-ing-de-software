@@ -50,7 +50,10 @@ js/main.js          punto de entrada: instancia las piezas y conecta botones ↔
                     servicios (raíz de composición: el único que los conoce a todos)
 supabase-config.js  `SUPABASE_URL` y `SUPABASE_KEY` (clave pública, versionada a propósito)
 supabase.js         cliente de Supabase (browser client)
-docs/diagrama-casos-uso.md  casos de uso planeados (Mermaid)
+Documentacion del desarrollo/Sprints/
+                    UML del sistema final en PNG: `Diagrama de clases Final.png`
+                    y `Diagrama de Casos de Uso Final.png` (exportados desde
+                    código Mermaid)
 README.md           cómo ejecutarla, estructura y datos guardados
 ```
 

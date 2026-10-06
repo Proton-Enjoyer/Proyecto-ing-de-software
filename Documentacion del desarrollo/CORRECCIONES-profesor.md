@@ -17,15 +17,15 @@ Pendiente de resolver **antes de la aprobación para transferencia**.
 - [x] **1. README y documentación al día con `main`** — auditoría de los 7
       `.md` + `Introduccion.txt` + el árbol de estructura. Corregido:
       `AGENTS.md` presentaba *Registro/login* como **pendiente** cuando ya
-      existe (`js/auth.js`), citaba un archivo inexistente
-      `docs/diagrama-casos-uso.md` y mencionaba GitHub Pages como
+      existe (`js/auth.js`), citaba un archivo que no existía en `docs/` y
+      mencionaba GitHub Pages como
       despliegue (es Vercel); `README.md` no tenía `css/chatbot.css` en el
       árbol ni el registro/login entre las funcionalidades, y tenía una
       errata de puntuación; `Introduccion.txt` dejaba el registro/login
-      como futuro y le faltaba el punto tras "sin frameworks". Creado
-      `docs/diagrama-casos-uso.md` (casos de uso del sistema final en
-      Mermaid, **render verificado**: 41 nodos) y añadida una sección
-      "Documentación" al README como índice. Verificado que ningún `.md`
+      como futuro y le faltaba el punto tras "sin frameworks". Añadida una
+      sección "Documentación" al README como índice. El diagrama de casos
+      de uso (41 nodos) queda como imagen `docs/diagrama-casos-uso.png`
+      (punto 4), exportada desde código Mermaid. Verificado que ningún `.md`
       del repo queda con "sin backend", entidades viejas
       (*Geolocalizador*, *Usuario*, *Coach*…), tablas inventadas
       (`runs`/`profiles`/`routes`) ni enlaces rotos. El `RunWELL.pdf` del
@@ -35,9 +35,18 @@ Pendiente de resolver **antes de la aprobación para transferencia**.
       cronograma/Gantt y análisis de riesgos.
 - [ ] **3. Especificación final de requisitos** — necesidades, requisitos
       funcionales, no funcionales, actores y requisitos de datos.
-- [ ] **4. UML actualizado del sistema final** — mínimo diagrama de clases y de
-      casos de uso.
-- [ ] **5. Revisión de POO** — clases, encapsulación, herencia, relaciones de dominio.
+- [x] **4. UML actualizado del sistema final** — mínimo diagrama de clases y de
+      casos de uso. Los dos diagramas se generaron desde código Mermaid (fuente
+      verificada con render) y quedaron como imagen en `Sprints/Diagrama de
+      clases Final.png` (18 clases reales, 15 herencias, el `bus` singleton) y
+      `Sprints/Diagrama de Casos de Uso Final.png`. Se descartó la fuente en
+      `.md` a pedido del usuario: los UML viven como imágenes. Se eliminó el
+      diagrama de clases anterior (`Diagrama Clases de Diseño, Runwell.png`),
+      subido antes del refactor POO: dibujaba la arquitectura vieja y contradecía
+      el código.
+- [x] **5. Revisión de POO** — clases, encapsulación, herencia, relaciones de
+      dominio. Hecho en `6a2a377`: 18 clases reales, 15 herencias, estado
+      compartido inyectado; verificado por los 58 checks de `__poo.html`.
 - [x] **6. Documentar solo los patrones de diseño realmente implementados.**
       → `Sprints/Patrones de diseño.md`: Observer, Repository, singleton por
       módulo, herencia/polimorfismo con encapsulación e inyección de
@@ -104,10 +113,13 @@ Pendiente de resolver **antes de la aprobación para transferencia**.
 
 ## Estado conocido
 
-- **5 (POO)**: hecho y commiteado en `6a2a377`. 17 clases, jerarquía real.
-- **1 (README)**: `README.md` y `AGENTS.md` ya actualizados en `6a2a377`
-  (Supabase y estructura). Falta revisar el resto de la documentación.
-- **6 (patrones)**: hecho, pendiente de commit — `Sprints/Patrones de
-  diseño.md` + puntero en `README.md` + corrección de "9 → 10 clases de
-  servicio" en `README.md`, `AGENTS.md` y `Cierre de proyecto.md`.
-- **7 (pruebas)**: hecho, pendiente de commit — ver el punto 7 de arriba.
+- **Hechos**: 1 (`1c33ed2`), 4 (PNG nuevos, pendiente de commit), 5
+  (`6a2a377`), 6 (`97d7d06`), 7 (`870f1f8`), 8 (`55f8438`), 9 (`15f1ac2`),
+  10 (`fdd6785`), 11 (verificado, sin cambios que commitear).
+- **Pendientes**: 2 (planificación/Gantt/riesgos) y 3 (especificación de
+  requisitos) — los resuelve el usuario en sus `.docx`, con los avisos ya
+  señalados: Metodologías desactualizado (sigue con `Usuario`/`Coach`/
+  `PlanEntrenamiento`), RF01/RF05 vs. auth real y matriz de riesgos titulada
+  "Sistema de Gestión de Rutinas Wellness con POO e IA" en vez de RunWell.
+- **Último commit del ciclo**: borrar `CORRECCIONES-profesor.md`.
+- El `docs/` original quedó vacío (los UML ahora son PNG en `Sprints/`).
