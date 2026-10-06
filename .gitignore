@@ -5,5 +5,13 @@ __*.html
 .DS_Store
 *.log
 .vscode/
-# Archivo de configuración privada de Supabase
-supabase-config.js
+# NOTA: supabase-config.js SÍ se versiona a propósito.
+# Contiene SUPABASE_URL y SUPABASE_KEY, donde la key es de tipo
+# `sb_publishable_...`: una clave pública de cliente que Supabase
+# diseñó para ir embebida en el frontend (no es la service_role).
+# La seguridad NO depende de ocultarla, sino de las políticas RLS
+# y de Storage. Ver "Documentacion del desarrollo/Sprints/
+# Documentación Supabase.md".
+# Si alguna vez se necesita una service_role, esa NUNCA se versiona:
+# va en variable de entorno del servidor o en un secret manager.
+#   supabase-config.js

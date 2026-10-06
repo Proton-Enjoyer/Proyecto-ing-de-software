@@ -1,91 +1,76 @@
-// js/chatbot.js
+// js/chatbot.js — Asistente flotante de respuestas rápidas.
+//
+// Chatbot es un servicio sin estado propio (no necesita el estado compartido):
+// hereda de ServicioBase para poder publicar eventos al bus si hace falta.
 
-export function inicializarChatbot() {
-    const toggleBtn = document.getElementById('chatbot-toggle-btn');
-    const container = document.getElementById('chatbot-container');
-    const closeBtn = document.getElementById('chatbot-close');
-    const sendBtn = document.getElementById('chatbot-send');
-    const inputField = document.getElementById('chatbot-input');
-    const messagesContainer = document.getElementById('chatbot-messages');
+import { ServicioBase } from './base.js';
 
-    if (!toggleBtn || !container) return;
+const SUGERENCIAS = [
+    "¿Cuál es la ruta más corta?",
+    "Ver mi entrenamiento",
+    "¿Cómo mido la distancia?"
+];
 
-    toggleBtn.addEventListener('click', () => {
-        container.classList.toggle('hidden');
-    });
+export class Chatbot extends ServicioBase {
+    constructor(store) {
+        super(store);
+    }
 
-    closeBtn.addEventListener('click', () => {
-        container.classList.add('hidden');
-    });
+    /** Elementos del widget (se resuelven una sola vez). */
+    #elementos() {
+        return {
+            toggleBtn: document.getElementById('chatbot-toggle-btn'),
+            container: document.getElementById('chatbot-container'),
+            closeBtn: document.getElementById('chatbot-close'),
+            sendBtn: document.getElementById('chatbot-send'),
+            inputField: document.getElementById('chatbot-input'),
+            messagesContainer: document.getElementById('chatbot-messages')
+        };
+    }
 
-    async function enviarMensaje() {
-        const inputField = document.getElementById('chatbot-input');
-        const messagesContainer = document.getElementById('chatbot-messages');
-        const texto = inputField.value.trim();
-        
+    // --- Render de mensajes ---
+
+    /** Añade un mensaje al hilo y deja el scroll al final. */
+    #appendMensaje(clase, texto, contenedor) {
+        const div = document.createElement('div');
+        div.className = clase;
+        div.innerText = texto;
+        contenedor.appendChild(div);
+        contenedor.scrollTop = contenedor.scrollHeight;
+        return div;
+    }
+
+    /**
+     * Procesa el texto del input: muestra el mensaje del usuario, un indicador
+     * de escritura y luego la respuesta.
+     */
+    async enviarMensaje(el) {
+        const texto = el.inputField.value.trim();
+
         if (!texto) return;
 
         // Mostrar mensaje del usuario
-        const userDiv = document.createElement('div');
-        userDiv.className = 'user-msg';
-        userDiv.innerText = texto;
-        messagesContainer.appendChild(userDiv);
-        
-        inputField.value = '';
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        this.#appendMensaje('user-msg', texto, el.messagesContainer);
+        el.inputField.value = '';
 
         // Mostrar indicador de carga temporal del bot
-        const loadingDiv = document.createElement('div');
-        loadingDiv.className = 'bot-msg';
-        loadingDiv.innerText = 'Escribiendo...';
-        messagesContainer.appendChild(loadingDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        const loadingDiv = this.#appendMensaje('bot-msg', 'Escribiendo...', el.messagesContainer);
 
         let respuestaFinal = "";
         try {
-            respuestaFinal = generarRespuestaLocal(texto);
+            respuestaFinal = this.generarRespuestaLocal(texto);
         } catch (error) {
             respuestaFinal = "¡Hola! Como asistente de RunWell te ayudo con tus rutas y entrenamientos.";
         }
 
         loadingDiv.innerText = respuestaFinal;
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        el.messagesContainer.scrollTop = el.messagesContainer.scrollHeight;
     }
 
-    async function consultarGemini(apiKey, mensajeUsuario) {
-        try {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-            
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: `Eres el asistente virtual de RunWell, una aplicación web de bienestar, rutas y seguimiento de actividades físicas. Responde de forma breve, amable y directa a la siguiente duda del usuario: ${mensajeUsuario}`
-                        }]
-                    }]
-                })
-            });
-
-            const data = await response.json();
-            
-            if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-                return data.candidates[0].content.parts[0].text;
-            } else if (data.error) {
-                console.error("Error devuelto por la API:", data.error.message);
-                return "Ups, hubo un pequeño detalle con la clave. Revisa que esté activa en Google AI Studio.";
-            }
-            
-            return generarRespuestaLocal(mensajeUsuario);
-        } catch (error) {
-            console.error('Error en la conexión con la API:', error);
-            return generarRespuestaLocal(mensajeUsuario);
-        }
-    }
-function generarRespuestaLocal(pregunta) {
+    /** Respuesta por reglas (sin red): se decide por palabras clave. */
+    generarRespuestaLocal(pregunta) {
         const p = pregunta.toLowerCase();
-        
+
         if (p.includes('ruta') || p.includes('mapa') || p.includes('camino') || p.includes('corta')) {
             return "Analizando las rutas guardadas en RunWell... La ruta más eficiente actual registra 4.2 km con un tiempo estimado de 22 minutos. ¡Ideal para un trote constante!";
         } else if (p.includes('entreno') || p.includes('entrenamiento') || p.includes('ejercicio') || p.includes('rutina') || p.includes('hacer')) {
@@ -99,49 +84,104 @@ function generarRespuestaLocal(pregunta) {
         }
     }
 
-    sendBtn.addEventListener('click', enviarMensaje);
-    inputField.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') enviarMensaje();
-    });
-}
-function crearSugerenciasRapidas() {
-        const messagesContainer = document.getElementById('chatbot-messages');
-        
-        // Evitar duplicar los botones si ya existen
+    /**
+     * Consulta a Gemini. Se conserva como método (queda disponible para
+     * conectar un modelo real), pero la app usa `generarRespuestaLocal`.
+     */
+    async consultarGemini(apiKey, mensajeUsuario) {
+        try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: `Eres el asistente virtual de RunWell, una aplicación web de bienestar, rutas y seguimiento de actividades físicas. Responde de forma breve, amable y directa a la siguiente duda del usuario: ${mensajeUsuario}`
+                        }]
+                    }]
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+                return data.candidates[0].content.parts[0].text;
+            } else if (data.error) {
+                console.error("Error devuelto por la API:", data.error.message);
+                return "Ups, hubo un pequeño detalle con la clave. Revisa que esté activa en Google AI Studio.";
+            }
+
+            return this.generarRespuestaLocal(mensajeUsuario);
+        } catch (error) {
+            console.error('Error en la conexión con la API:', error);
+            return this.generarRespuestaLocal(mensajeUsuario);
+        }
+    }
+
+    /**
+     * Chips de sugerencias rápidas. Evita duplicarse si ya están en el hilo
+     * (comprobación por id, como antes).
+     */
+    crearSugerenciasRapidas(el) {
         if (document.getElementById('chatbot-chips')) return;
 
         const chipsContainer = document.createElement('div');
         chipsContainer.id = 'chatbot-chips';
         chipsContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0;';
 
-        const sugerencias = [
-            "¿Cuál es la ruta más corta?",
-            "Ver mi entrenamiento",
-            "¿Cómo mido la distancia?"
-        ];
-
-        sugerencias.forEach(texto => {
+        SUGERENCIAS.forEach(texto => {
             const btn = document.createElement('button');
             btn.innerText = texto;
             btn.style.cssText = 'background: rgba(255, 204, 0, 0.2); border: 1px solid #ffcc00; color: #111; padding: 6px 10px; border-radius: 12px; font-size: 0.75rem; cursor: pointer; font-weight: 500;';
-            
+
             btn.onmouseover = () => btn.style.opacity = '0.7';
             btn.onmouseout = () => btn.style.opacity = '1';
-            
+
             btn.onclick = () => {
-                document.getElementById('chatbot-input').value = texto;
-                enviarMensaje();
+                el.inputField.value = texto;
+                this.enviarMensaje(el);
                 chipsContainer.remove();
             };
 
             chipsContainer.appendChild(btn);
         });
 
-        messagesContainer.appendChild(chipsContainer);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        el.messagesContainer.appendChild(chipsContainer);
+        el.messagesContainer.scrollTop = el.messagesContainer.scrollHeight;
     }
 
-    // Llamar a los botones justo al cargar o abrir el chat
-    window.addEventListener('DOMContentLoaded', () => {
-        setTimeout(crearSugerenciasRapidas, 500);
-    });
+    /** Conecta los listeners del widget. */
+    inicializar() {
+        const el = this.#elementos();
+
+        if (!el.toggleBtn || !el.container) return;
+
+        el.toggleBtn.addEventListener('click', () => {
+            el.container.classList.toggle('hidden');
+        });
+
+        el.closeBtn.addEventListener('click', () => {
+            el.container.classList.add('hidden');
+        });
+
+        el.sendBtn.addEventListener('click', () => {
+            this.enviarMensaje(el);
+        });
+
+        el.inputField.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.enviarMensaje(el);
+        });
+
+        // Los chips se añaden poco después de cargar la página
+        setTimeout(() => this.crearSugerenciasRapidas(el), 500);
+    }
+}
+
+// Singleton del widget.
+export const chatbot = new Chatbot();
+
+export function inicializarChatbot() {
+    return chatbot.inicializar();
+}

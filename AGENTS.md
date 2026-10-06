@@ -24,28 +24,52 @@ css/base.css        <link> importa: define el cascade)
 css/mapa.css
 css/secciones.css
 css/responsive.css
+js/base.js          abstracciones compartidas: `EmisorEventos`, `bus`, `EVENTO`,
+                    `ServicioBase`, `Repositorio`. Sin imports a propósito, para
+                    que cualquier módulo pueda heredar de él sin crear ciclos
+js/recursos.js      constantes compartidas: `AVATAR_POR_DEFECTO`, `BUCKET_AVATARES`
 js/datos.js         rutas mock
 js/util.js          funciones puras (tiempo, distancia, ritmo, colisión)
-js/estado.js        objeto `estado` compartido por todos los módulos
+js/estado.js        `StateStore` (extiende `EmisorEventos`): el estado compartido
 js/dom.js           referencias al DOM (resueltas una sola vez)
-js/actividad.js     cronómetro, HUD, traza, guardado de sesiones
-js/proximidad.js    detección de cercanía + prompt
-js/geolocalizacion.js seguimiento GPS, errores, marcador del usuario
-js/mapa.js          apertura/cierre, dibujo de rutas, popups
-js/eventos.js       tarjetas de la sección Eventos
-js/navegacion.js    mostrar/ocultar secciones + menú móvil
-js/historial.js     localStorage: guardado, lectura, render, migración
-js/tema.js          modo oscuro
-js/main.js          punto de entrada: conecta botones ↔ módulos
+js/actividad.js     `Actividad`, `TipoActividad` → `Trote`/`Carrera`: cronómetro,
+                    HUD, traza, popups, guardado de sesiones
+js/proximidad.js    `ProximityDetector`: detección de cercanía + prompt
+js/geolocalizacion.js `GeolocationService`: seguimiento GPS, errores, marcador
+js/mapa.js          `MapController`: apertura/cierre, dibujo de rutas, popups
+js/eventos.js       `EventosController`: tarjetas de la sección Eventos
+js/navegacion.js    `Navegacion`: mostrar/ocultar secciones + menú móvil
+js/historial.js     `HistoryRepository`: localStorage: guardado, lectura, render,
+                    migración
+js/tema.js          `Tema`: modo oscuro
+js/logs.js          `Logger`: eventos y crashes → Supabase Storage (bucket `logs`)
+js/auth.js          `AuthService`: modal de login/registro y sesión
+js/chatbot.js       `Chatbot`: asistente de la interfaz
+js/main.js          punto de entrada: instancia las piezas y conecta botones ↔
+                    servicios (raíz de composición: el único que los conoce a todos)
+supabase-config.js  `SUPABASE_URL` y `SUPABASE_KEY` (clave pública, versionada a propósito)
+supabase.js         cliente de Supabase (browser client)
 docs/diagrama-casos-uso.md  casos de uso planeados (Mermaid)
 README.md           cómo ejecutarla, estructura y datos guardados
 ```
-Grafo de dependencias (sin ciclos): `datos/util/estado/dom` → `historial` → `actividad` → `proximidad` → `geolocalizacion` → `mapa` → `eventos`; `main.js` importa todos. Si un módulo necesita algo de otro que lo precede en el grafo, la función se llama en tiempo de ejecución (no en la evaluación del módulo) — nunca tocar estado al cargar.
+
+Arquitectura POO: `EmisorEventos` (Observer) → `bus` + `ServicioBase` + `StateStore`;
+`ServicioBase` → 9 servicios; `Repositorio` → `HistoryRepository`;
+`TipoActividad` → `Trote`/`Carrera`. `main.js` es la única raíz de composición.
+Los servicios **no importan al logger**: publican con `this.registrar(...)` y el
+`Logger` se suscribe al `bus` — eso es lo que rompe el acoplamiento.
+
+Grafo de dependencias (sin ciclos): `datos/util/estado/dom` → `historial` → `actividad` → `proximidad` → `geolocalizacion` → `mapa` → `eventos`; `main.js` importa todos. Si un módulo necesita algo de otro que lo precede en el grafo, la función se llama en tiempo de ejecución (no en la evaluación del módulo) — nunca tocar estado al cargar. Existe un ciclo **intencional** `actividad ↔ mapa` (resuelto por hoisting de `function` declarations); por eso los módulos de servicio conservan su capa de `export function`.
 
 ## Funcionalidad planificada (según casos de uso)
 Registro/login, seleccionar/filtrar rutas,
-dashboard de estadísticas e historial de progreso. No hay backend ni persistencia todavía
-(se evaluó Supabase como BaaS gratuita y GitHub Pages/Vercel para el deploy).
+dashboard de estadísticas e historial de progreso.
+
+Ya hay integración con Supabase como BaaS: auth (`js/auth.js`), historial y
+actividades en tablas propias, avatares en Storage (bucket `avatars`) y logs de
+uso (bucket `logs`). No hay servidor propio ni build: el frontend es puro y se
+sirve tal cual (GitHub Pages / Vercel). La seguridad está en las políticas RLS
+y de Storage, no en ocultar la clave de cliente.
 
 ## Notas de desarrollo
 - **Logs** (`js/logs.js`): eventos de uso y crashes se suben a Supabase
@@ -54,11 +78,13 @@ dashboard de estadísticas e historial de progreso. No hay backend ni persistenc
   `__probe_logs.html` (ignorado por git).
 - **Módulos ES**: hay que servir por HTTP (`python3 -m http.server`); `file://` no carga los módulos. `L` (Leaflet) es un global accesible desde los módulos porque se carga como script clásico antes de `main.js`.
 - El mismo popup se vincula a los marcadores de inicio y fin de cada ruta (duplicado de listeners por diseño).
+- `abrirMapa()` borra y recrea todos los marcadores, con lo que cualquier popup abierto muere con su marcador. Por eso `MapController.abrirPopupRuta(idx)` guarda los marcadores por ruta (`#markersRuta`) y reabre el popup tras redibujar: sin eso, iniciar o detener una actividad cerraba el popup y había que volver a tocar el marcador para llegar a "Detener". `actividad.js` lo llama justo después de cada `abrirMapa()`.
 - El popup de Leaflet **no está en el `document` hasta que se abre**: `estado.popupsRuta` registra los nodos por ruta para poder actualizar su UI aunque esté cerrado (si no, iniciar actividad desde el prompt dejaría el popup desfasado). `js/eventos.js` reutiliza esos nodos para abrir el popup tras "Ver Ruta en Mapa".
 - El ícono del usuario se crea de forma perezosa (`iconoUsuario()`) para no depender del orden de carga de Leaflet.
 - Los botones del mapa usan `padding: 0` para quedar circulares (el selector global `button` agrega padding por defecto).
 - Las reglas CSS con `!important` de modo oscuro (tarjetas de historial) ganan por diseño: `.dark-theme .plane-card` debe competir con `body`/herencia.
-- **Sin suite de tests permanente**: la validación se hace con arnes temporales generados desde `index.html` (`__probe.html` y `__geo.html`, ignorados por git) que capturan `window.onerror` y ejercitan la app con clics reales en Firefox headless, reportando a un servidor local en el puerto 8777. `__geo.html` mockea `navigator.geolocation`/`navigator.permissions` con 4 escenarios (`?esc=pendiente|concede|ok|denegado`). Última pasada: **23/23 checks de geolocalización + 23/23 de regresión** (mapa, popup, actividad→detener→historial, tema, carga con permiso denegado sin alertas, toast de coordenadas), 0 errores de consola. Cada escenario corre con **perfil de Firefox desechable nuevo** (`/tmp/opencode/ff-*`) y `timeout -s KILL`: reutilizar un perfil tras un kill a medias deja sesión colgada y los reportes no llegan.
+- **Sin suite de tests permanente**: la validación se hace con arnes temporales generados desde `index.html` (`__*.html`, ignorados por git) que capturan `window.onerror` y ejercitan la app con clics reales en Firefox headless, reportando a un servidor local. Los arneses actuales: `__geo.html` (4 escenarios `?esc=pendiente|concede|ok|denegado`, mockeando `navigator.geolocation`/`navigator.permissions`), `__popup.html` (30 checks del popup al iniciar/detener), `__e2e.html` (37 checks de regresión: navegación, mapa, historial, migración, chatbot, modal de auth, GPS), `__poo.html` (58 checks de jerarquía/encapsulación: Observer, Template Method, Repository, singleton), `__probe_logs.html` (8 checks del Logger). Última pasada completa: **geo 23/23 · popup 30/30 · e2e 37/37 · POO 58/58 · logs 8/8**, 0 errores de consola. Cada escenario corre con **perfil de Firefox desechable nuevo** (`/tmp/opencode/ff-*`) y `timeout -s KILL`: reutilizar un perfil tras un kill a medias deja sesión colgada y los reportes no llegan.
+- Dos lecciones de estos arneses: (1) el script de pruebas debe inyectarse como `<script type="module">`, no clásico — como clásico corre antes del grafo de módulos y cada aserción falla en falso; (2) los checks que dependen de la subida a Supabase deben **sondear** (bucle de ~1 s hasta 30 s), no esperar un tiempo fijo: `Logger.subir()` saca el evento del buffer en cuanto arranca y solo incrementa `parte` cuando la petición responde, así que hay una ventana en la que el evento no está en ninguna de las dos partes.
 
 ## Preferencia de trabajo del usuario
 El usuario trabaja en modo **tutor**: se le explican conceptos y se le dan ejemplos generales,

@@ -25,7 +25,7 @@
             <div class="nav-left" style="display: flex; align-items: center; gap: 12px;">
                 <!-- Círculo de perfil (arriba a la izquierda) -->
                 <div id="user-avatar-container" title="Perfil de usuario">
-                    <img id="user-avatar-img" src="" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); display: none; cursor: pointer;">
+                    <img id="user-avatar-img" alt="Avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); display: none; cursor: pointer;">
                 </div>
                 <div class="logo">RunWell</div>
             </div>
@@ -143,7 +143,7 @@
             <div id="login-form-container">
                 <h2 style="text-align: center; margin-bottom: 20px;">Iniciar Sesión</h2>
                 <div style="text-align: center; margin-bottom: 20px;">
-                    <img id="login-preview-avatar" src="https://via.placeholder.com/80" alt="Perfil" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary);">
+                    <img id="login-preview-avatar" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2280%22%20height%3D%2280%22%3E%3Crect%20width%3D%2280%22%20height%3D%2280%22%20fill%3D%22%23007bff%22/%3E%3Ccircle%20cx%3D%2240%22%20cy%3D%2231%22%20r%3D%2213%22%20fill%3D%22%23ffffff%22/%3E%3Cpath%20d%3D%22M40%2048c-13%200-24%208-24%2018v14h48V66c0-10-11-18-24-18z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E" alt="Perfil" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary);">
                 </div>
                 <form id="login-form" style="display: flex; flex-direction: column; gap: 15px;">
                     <div>
@@ -168,7 +168,7 @@
                     <div style="text-align: center; margin-bottom: 15px;">
                         <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Foto de Perfil</label>
                         <div style="position: relative; width: 80px; height: 80px; margin: 0 auto; border-radius: 50%; overflow: hidden; border: 3px solid var(--primary); cursor: pointer;" onclick="document.getElementById('reg-avatar').click();">
-                            <img id="reg-preview-avatar" src="https://via.placeholder.com/80" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                            <img id="reg-preview-avatar" src="data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2280%22%20height%3D%2280%22%3E%3Crect%20width%3D%2280%22%20height%3D%2280%22%20fill%3D%22%23007bff%22/%3E%3Ccircle%20cx%3D%2240%22%20cy%3D%2231%22%20r%3D%2213%22%20fill%3D%22%23ffffff%22/%3E%3Cpath%20d%3D%22M40%2048c-13%200-24%208-24%2018v14h48V66c0-10-11-18-24-18z%22%20fill%3D%22%23ffffff%22/%3E%3C/svg%3E" alt="Preview" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                         <input type="file" id="reg-avatar" accept="image/*" style="display: none;">
                         <span style="font-size: 0.8rem; color: gray; display: block; margin-top: 5px;">Haz clic en el círculo para elegir foto</span>

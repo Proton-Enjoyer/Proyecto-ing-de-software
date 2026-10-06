@@ -1,4 +1,4 @@
-// Mapa: apertura/cierre, dibujo de rutas, marcadores y popups (Leaflet).
+// js/mapa.js — Apertura/cierre, dibujo de rutas, marcadores y popups (Leaflet).
 
 import { estado } from './estado.js';
 import { misRutas } from './datos.js';
@@ -10,51 +10,80 @@ import {
 } from './actividad.js';
 import { obtenerUbicacion } from './geolocalizacion.js';
 import { mostrarSeccion } from './navegacion.js';
-import { log } from './logs.js';
+import { ServicioBase } from './base.js';
 
-class MapController {
+export class MapController extends ServicioBase {
+    #map = null;              // referencia local al mapa (mismo objeto que estado.mapa)
+    #markersRuta = {};        // marcadores creados por ruta (inicio y fin)
+
     constructor(store = estado) {
-        this.estado = store;
-        this._map = null; // referencia local al mapa (igual que estado.mapa)
+        super(store);
     }
 
-    _initMapIfNeeded() {
+    /**
+     * Reabre el popup de una ruta tras redibujar el mapa.
+     *
+     * Hace falta porque iniciar o detener una actividad llama a `abrirMapa()`,
+     * que borra y recrea los marcadores: el popup que el usuario tenía abierto
+     * pertenecía al marcador eliminado y se cerraba. Con esto el botón
+     * "Detener" queda a la vista sin que haya que volver a tocar un marcador.
+     */
+    abrirPopupRuta(rutaIdx) {
+        const marcadores = this.#markersRuta[rutaIdx];
+        const marcador = marcadores && marcadores[0];
+        if (!marcador) return;
+        // Se espera al mismo vuelo que usa #flyToStartIfNeeded para que el
+        // popup no aparezca mientras el mapa todavía se está desplazando.
+        setTimeout(() => {
+            if (this.#map && this.#map.hasLayer(marcador)) marcador.openPopup();
+        }, 200);
+    }
+
+    /** Crea el mapa de Leaflet la primera vez que se abre. */
+    #initMapIfNeeded() {
         if (this.estado.mapa) {
-            this._map = this.estado.mapa;
+            this.#map = this.estado.mapa;
             return;
         }
         // Centro por defecto en LUZ
-        this._map = L.map('map').setView([10.686, -71.645], 15);
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this._map);
-        this.estado.mapa = this._map;
+        this.#map = L.map('map').setView([10.686, -71.645], 15);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.#map);
+        this.estado.mapa = this.#map;
     }
 
-    _clearPreviousLayers() {
-        if (!this._map) return;
-        this._map.eachLayer((layer) => {
+    /** Quita las capas de la apertura anterior y su estado asociado. */
+    #clearPreviousLayers() {
+        if (!this.#map) return;
+        this.#map.eachLayer((layer) => {
             if (layer instanceof L.Polyline || layer instanceof L.Marker) {
-                this._map.removeLayer(layer);
+                this.#map.removeLayer(layer);
             }
         });
         // reset estado relacionado con capas/mapa
         this.estado.userMarker = null;
         this.estado.trazaLinea = null;
         this.estado.popupsRuta = {};
+        this.#markersRuta = {};
     }
 
-    _flyToStartIfNeeded(rutaIndex) {
-        if (!this._map) return;
+    /** Recalcula el tamaño del mapa y, si aplica, vuela al inicio de la ruta. */
+    #flyToStartIfNeeded(rutaIndex) {
+        if (!this.#map) return;
         setTimeout(() => {
-            this._map.invalidateSize();
+            this.#map.invalidateSize();
             if (rutaIndex !== null && misRutas[rutaIndex]) {
                 const coordInicio = misRutas[rutaIndex].coords[0];
-                this._map.flyTo(coordInicio, 16, { duration: 1.5 });
+                this.#map.flyTo(coordInicio, 16, { duration: 1.5 });
             }
         }, 200);
     }
 
-    _drawRoutes(rutaIndex = null) {
-        if (!this._map) return;
+    /**
+     * Dibuja una ruta concreta o todas: polilínea, marcadores de inicio/fin y
+     * el popup con los botones Trote / Carrera / Detener.
+     */
+    #drawRoutes(rutaIndex = null) {
+        if (!this.#map) return;
         const allCoords = [];
         const rutasAProcesar = rutaIndex !== null ? [misRutas[rutaIndex]] : misRutas;
 
@@ -69,7 +98,7 @@ class MapController {
                 opacity: 0.8,
                 lineCap: 'round',
                 lineJoin: 'round'
-            }).addTo(this._map);
+            }).addTo(this.#map);
 
             allCoords.push(...ruta.coords);
 
@@ -123,34 +152,33 @@ class MapController {
             refrescarPopup(currentIdx);
 
             // Marcadores de inicio y fin estilizados (comparten el mismo popup)
-            L.marker(ruta.coords[0], { icon: markerStyle }).addTo(this._map)
+            const marcadorInicio = L.marker(ruta.coords[0], { icon: markerStyle })
+                .addTo(this.#map)
                 .bindPopup(popupContent);
-            L.marker(ruta.coords[ruta.coords.length - 1], { icon: markerStyle }).addTo(this._map)
+            const marcadorFin = L.marker(ruta.coords[ruta.coords.length - 1], { icon: markerStyle })
+                .addTo(this.#map)
                 .bindPopup(popupContent);
+
+            // Se guardan para poder reabrir el popup tras un redibujado
+            this.#markersRuta[currentIdx] = [marcadorInicio, marcadorFin];
         });
 
         if (allCoords.length > 0) {
-            this._map.fitBounds(allCoords, { padding: [50, 50] });
+            this.#map.fitBounds(allCoords, { padding: [50, 50] });
         }
-        this._map.invalidateSize();
+        this.#map.invalidateSize();
     }
 
+    /** Abre el mapa con una ruta concreta (o con todas). */
     abrirMapa(rutaIndex = null) {
-        log('abrir-mapa', { ruta: rutaIndex });
+        this.registrar('abrir-mapa', { ruta: rutaIndex });
         // Mostrar la sección 'mapa' (oculta otras secciones)
         mostrarSeccion('mapa');
 
-        // Inicializar mapa si hace falta
-        this._initMapIfNeeded();
-
-        // Limpiar capas previas y estado relacionado
-        this._clearPreviousLayers();
-
-        // Forzar recálculo y posiblemente volar al inicio
-        this._flyToStartIfNeeded(rutaIndex);
-
-        // Dibujar rutas (una o todas)
-        this._drawRoutes(rutaIndex);
+        this.#initMapIfNeeded();
+        this.#clearPreviousLayers();
+        this.#flyToStartIfNeeded(rutaIndex);
+        this.#drawRoutes(rutaIndex);
 
         // Redibujar la traza si había una actividad en curso
         refrescarTraza();
@@ -159,21 +187,25 @@ class MapController {
         obtenerUbicacion(false);
     }
 
+    /** Cierra el mapa y vuelve al inicio. */
     cerrarMapa() {
         mostrarSeccion('inicio');
     }
 }
 
-// Exportar singleton mantenido por el módulo
+// --- Instancia singleton y API pública delegando en ella ---
+
+// Singleton: un solo mapa para toda la aplicación.
 export const mapController = new MapController();
 
-// Compatibilidad con la API antigua
 export function abrirMapa(rutaIndex = null) {
     return mapController.abrirMapa(rutaIndex);
+}
+
+export function abrirPopupRuta(rutaIdx) {
+    return mapController.abrirPopupRuta(rutaIdx);
 }
 
 export function cerrarMapa() {
     return mapController.cerrarMapa();
 }
-
-export { MapController };

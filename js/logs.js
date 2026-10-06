@@ -1,66 +1,95 @@
-// Logs de la página: captura de crashes, eventos y subida a Supabase Storage.
-// Ahora encapsulado en una clase Logger para mejor testabilidad y organización.
+// js/logs.js — Captura de eventos y crashes de la página, con subida a Supabase.
+//
+// Logger es un suscriptor del bus de eventos: los servicios publican con
+// `registrar(...)` y este servicio los guarda en un buffer. También se suscribe
+// a los eventos globales del navegador (error, unhandledrejection, pagehide),
+// que es donde entran los crashes.
+//
+// Los eventos se suben como JSON por sesión al bucket `logs` de Supabase Storage:
+// cada `intervaloMs`, de inmediato ante un crash y al cerrar la pestaña
+// (`fetch` con `keepalive`). Si la subida falla, los eventos se conservan en el
+// buffer y se reintentan; el fallo es silencioso en pantalla (solo consola) para
+// no degradar la experiencia del usuario.
 
 import { supabase } from '../supabase.js';
 import { SUPABASE_URL, SUPABASE_KEY } from '../supabase-config.js';
 import { estado } from './estado.js';
+import { ServicioBase, bus, EVENTO } from './base.js';
 
 const BUCKET = 'logs';
 const DEFAULT_INTERVALO_MS = 60_000; // subida automática cada X milisegundos
 const DEFAULT_MAX_BUFFER = 300;      // tope de eventos en memoria si la subida falla
 
-class Logger {
-    constructor({ bucket = BUCKET, intervaloMs = DEFAULT_INTERVALO_MS, maxBuffer = DEFAULT_MAX_BUFFER } = {}) {
-        this.bucket = bucket;
-        this.intervaloMs = intervaloMs;
-        this.maxBuffer = maxBuffer;
+export class Logger extends ServicioBase {
+    #bucket;
+    #intervaloMs;
+    #maxBuffer;
+    #sesion;
+    #buffer = [];
+    #parte = 0;
+    #subiendo = false;
+    #intervalId = null;
+    #started = false;
+    #desuscribirBus;
 
-        this.sesion = (typeof crypto !== 'undefined' && crypto.randomUUID)
+    // Callbacks de los eventos globales del navegador, ya enlazados a `this`.
+    #onErrorEvent = (e) => this.#manejarErrorEvent(e);
+    #onUnhandledRejection = (e) => this.#manejarRechazo(e);
+    #onPageHide = () => this.subir(true);
+
+    constructor(store = estado, opciones = {}) {
+        const {
+            bucket = BUCKET,
+            intervaloMs = DEFAULT_INTERVALO_MS,
+            maxBuffer = DEFAULT_MAX_BUFFER
+        } = opciones;
+        super(store);
+
+        this.#bucket = bucket;
+        this.#intervaloMs = intervaloMs;
+        this.#maxBuffer = maxBuffer;
+        this.#sesion = (typeof crypto !== 'undefined' && crypto.randomUUID)
             ? crypto.randomUUID()
             : `s-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
 
-        this.buffer = [];
-        this.parte = 0;
-        this.subiendo = false;
-        this._intervalId = null;
-        this._started = false;
-
-        // Bind public methods for convenience
-        this.log = this.log.bind(this);
-        this.subir = this.subir.bind(this);
-        this.iniciar = this.iniciar.bind(this);
-        this._onErrorEvent = this._onErrorEvent.bind(this);
-        this._onUnhandledRejection = this._onUnhandledRejection.bind(this);
-        this._onPageHide = this._onPageHide.bind(this);
+        // El logger también es un suscriptor del bus de eventos de la app.
+        this.#desuscribirBus = bus.suscribir(EVENTO, (evento) => this.log(
+            evento.tipo,
+            evento
+        ));
     }
 
-    // Registra un evento. Nunca lanza errores.
+    // --- Buffer de eventos ---
+
+    /**
+     * Registra un evento. Nunca lanza errores: el logging no puede romper la app.
+     */
     log(tipo, detalle = {}) {
         try {
-            this.buffer.push({
+            this.#buffer.push({
                 ...detalle,
                 t: new Date().toISOString(),
                 tipo,
                 pagina: (location.hash || '') + location.pathname
             });
-            if (this.buffer.length > this.maxBuffer) this.buffer.shift();
+            if (this.#buffer.length > this.#maxBuffer) this.#buffer.shift();
         } catch (e) {
             console.warn('[logger] error al loggear:', e);
         }
     }
 
-    // Estado de la app para el heartbeat
+    /** Estado de la app para el heartbeat. */
     resumenApp() {
         try {
-            const act = estado.actividad || {};
+            const act = this.estado.actividad || {};
             return {
                 activa: !!act.activa,
                 actividad: act.tipo,
                 segundos: act.seconds,
-                dist_m: Math.round(estado.distanciaTotal || 0),
-                pos: estado.posActual
-                    ? [Math.round(estado.posActual[0] * 1e5) / 1e5,
-                       Math.round(estado.posActual[1] * 1e5) / 1e5]
+                dist_m: Math.round(this.estado.distanciaTotal || 0),
+                pos: this.estado.posActual
+                    ? [Math.round(this.estado.posActual[0] * 1e5) / 1e5,
+                       Math.round(this.estado.posActual[1] * 1e5) / 1e5]
                     : null
             };
         } catch (e) {
@@ -68,19 +97,24 @@ class Logger {
         }
     }
 
-    // Sube el buffer como JSON; si useKeepalive=true usa fetch keepalive
-    async subir(useKeepalive = false) {
-        if (this.subiendo || this.buffer.length === 0) return;
-        this.subiendo = true;
+    // --- Subida a Supabase Storage ---
 
-        const eventos = this.buffer.splice(0);
-        const nombre = `${this.sesion}/parte-${String(this.parte).padStart(4, '0')}.json`;
-        const cuerpo = JSON.stringify({ sesion: this.sesion, eventos }, null, 2);
+    /**
+     * Sube el buffer como JSON. Con `useKeepalive` usa `fetch` para poder subir
+     * durante el cierre de la pestaña.
+     */
+    async subir(useKeepalive = false) {
+        if (this.#subiendo || this.#buffer.length === 0) return;
+        this.#subiendo = true;
+
+        const eventos = this.#buffer.splice(0);
+        const nombre = `${this.#sesion}/parte-${String(this.#parte).padStart(4, '0')}.json`;
+        const cuerpo = JSON.stringify({ sesion: this.#sesion, eventos }, null, 2);
         let ok = false;
 
         try {
             if (useKeepalive) {
-                const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${this.bucket}/${nombre}`, {
+                const r = await fetch(`${SUPABASE_URL}/storage/v1/object/${this.#bucket}/${nombre}`, {
                     method: 'POST',
                     headers: {
                         apikey: SUPABASE_KEY,
@@ -94,7 +128,7 @@ class Logger {
                 ok = r.ok;
                 if (!r.ok) console.warn('[logger] subida rechazada:', r.status);
             } else {
-                const { error } = await supabase.storage.from(this.bucket)
+                const { error } = await supabase.storage.from(this.#bucket)
                     .upload(nombre, new Blob([cuerpo], { type: 'application/json' }),
                         { upsert: true, contentType: 'application/json' });
                 ok = !error;
@@ -105,17 +139,18 @@ class Logger {
         }
 
         if (ok) {
-            this.parte++;
+            this.#parte++;
             console.info(`[logger] ${eventos.length} eventos → ${nombre}`);
         } else {
             // Devolver los eventos al buffer (se conservan los más recientes)
-            this.buffer = [...eventos, ...this.buffer].slice(-this.maxBuffer);
+            this.#buffer = [...eventos, ...this.#buffer].slice(-this.#maxBuffer);
         }
-        this.subiendo = false;
+        this.#subiendo = false;
     }
 
-    // Handlers de eventos globales
-    _onErrorEvent(e) {
+    // --- Eventos globales del navegador (crashes) ---
+
+    #manejarErrorEvent(e) {
         try {
             if (e.target && e.target !== window && (e.target.src || e.target.href)) {
                 this.log('crash-recurso', {
@@ -137,7 +172,7 @@ class Logger {
         }
     }
 
-    _onUnhandledRejection(e) {
+    #manejarRechazo(e) {
         try {
             const r = e.reason;
             this.log('crash-promesa', { msg: String((r && (r.message || r)) || r) });
@@ -147,18 +182,15 @@ class Logger {
         }
     }
 
-    _onPageHide() {
-        // Intento final con keepalive
-        this.subir(true);
-    }
+    // --- Arranque y ciclo de vida ---
 
-    // Inicia la captura y heartbeat
+    /** Inicia la captura de crashes y el heartbeat periódico. */
     iniciar() {
-        if (this._started) return;
-        this._started = true;
+        if (this.#started) return;
+        this.#started = true;
 
-        addEventListener('error', this._onErrorEvent, true);
-        addEventListener('unhandledrejection', this._onUnhandledRejection);
+        addEventListener('error', this.#onErrorEvent, true);
+        addEventListener('unhandledrejection', this.#onUnhandledRejection);
 
         this.log('carga-pagina', {
             ref: document.referrer || null,
@@ -167,39 +199,62 @@ class Logger {
         });
 
         // Heartbeat periódico
-        this._intervalId = setInterval(() => {
+        this.#intervalId = setInterval(() => {
             this.log('heartbeat', this.resumenApp());
             this.subir();
-        }, this.intervaloMs);
+        }, this.#intervaloMs);
 
-        addEventListener('pagehide', this._onPageHide);
+        addEventListener('pagehide', this.#onPageHide);
 
-        console.info(`[logger] activo · subida cada ${this.intervaloMs / 1000} s · sesión ${this.sesion}`);
+        console.info(`[logger] activo · subida cada ${this.#intervaloMs / 1000} s · sesión ${this.#sesion}`);
     }
 
-    // Debug / inspección
+    /** Detiene el heartbeat y la captura de eventos del navegador. */
+    detener() {
+        if (this.#intervalId) {
+            clearInterval(this.#intervalId);
+            this.#intervalId = null;
+        }
+        removeEventListener('error', this.#onErrorEvent, true);
+        removeEventListener('unhandledrejection', this.#onUnhandledRejection);
+        removeEventListener('pagehide', this.#onPageHide);
+        if (this.#desuscribirBus) this.#desuscribirBus();
+        this.#started = false;
+    }
+
+    /** Estado del logger, para depuración desde la consola. */
     ver() {
         return {
-            sesion: this.sesion,
-            parte: this.parte,
-            subiendo: this.subiendo,
-            buf: this.buffer.slice()
+            sesion: this.#sesion,
+            parte: this.#parte,
+            subiendo: this.#subiendo,
+            buf: this.#buffer.slice()
         };
     }
 }
 
-// Singleton
+// --- Instancia singleton y API pública delegando en ella ---
+
+// Singleton: el logger es único en la aplicación.
 export const logger = new Logger();
 
-// API compatible con la versión previa
-export function log(tipo, detalle = {}) { return logger.log(tipo, detalle); }
-export function subir(useKeepalive = false) { return logger.subir(useKeepalive); }
-export function iniciarLogs() { return logger.iniciar(); }
+// Compatibilidad con la API de funciones que usan el resto de módulos.
+export function log(tipo, detalle = {}) {
+    return logger.log(tipo, detalle);
+}
 
-// Exponer utilidad para depuración desde la consola
+export function subir(useKeepalive = false) {
+    return logger.subir(useKeepalive);
+}
+
+export function iniciarLogs() {
+    return logger.iniciar();
+}
+
+// Utilidad de depuración desde la consola del navegador.
 globalThis.__logs = {
-    log: logger.log,
-    subir: logger.subir,
-    iniciar: logger.iniciar,
+    log: (tipo, detalle = {}) => logger.log(tipo, detalle),
+    subir: (useKeepalive = false) => logger.subir(useKeepalive),
+    iniciar: () => logger.iniciar(),
     ver: () => logger.ver()
 };

@@ -1,5 +1,8 @@
-// Punto de entrada: conecta los módulos con los botones del DOM y arranca
-// el tema, el historial y el seguimiento GPS.
+// js/main.js — Punto de entrada (composition root).
+//
+// Aquí se inician los servicios y se conectan con los botones del DOM.
+// Ninguna otra clase crea dependencias: este es el único lugar que conoce a
+// todas las piezas y las une.
 
 import { estado } from './estado.js';
 import * as dom from './dom.js';
@@ -14,7 +17,10 @@ import { iniciarTema } from './tema.js';
 import { iniciarAutenticacion } from './auth.js';
 import { iniciarLogs } from './logs.js';
 import { inicializarChatbot } from './chatbot.js';
-// Iniciar actividad desde el prompt de proximidad (abre esa ruta y arranca)
+
+/**
+ * Inicia la actividad desde el prompt de proximidad: abre esa ruta y arranca.
+ */
 function iniciarDesdePrompt(tipo) {
     const idx = estado.rutaDetectada;
     ocultarPrompt();

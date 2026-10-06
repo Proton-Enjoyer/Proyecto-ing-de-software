@@ -23,6 +23,8 @@ La geolocalización solo funciona en contextos seguros (HTTPS o `localhost`).
 
 ```
 ├── index.html            estructura de la página (secciones, mapa, HUD, prompt)
+├── supabase-config.js    SUPABASE_URL + SUPABASE_KEY (clave pública, versionada a propósito)
+├── supabase.js           cliente de Supabase (browser client)
 ├── css/
 │   ├── variables.css     :root, tema oscuro, reset (se carga primero)
 │   ├── base.css          nav, hero, botones, switch de tema, menú hamburguesa
@@ -30,23 +32,36 @@ La geolocalización solo funciona en contextos seguros (HTTPS o `localhost`).
 │   ├── secciones.css     eventos, historial y modo oscuro de tarjetas
 │   └── responsive.css    media queries (móvil, navbar, menú desplegable)
 ├── js/
+│   ├── base.js           abstracciones: EmisorEventos, bus, ServicioBase, Repositorio
+│   ├── recursos.js       constantes compartidas (avatar por defecto, bucket de avatares)
 │   ├── datos.js          rutas mock (misRutas)
 │   ├── util.js           funciones puras: tiempo, distancia (Haversine), ritmo, colisión
-│   ├── estado.js         objeto `estado` compartido (mapa, GPS, actividad, popups)
+│   ├── estado.js         estado compartido (mapa, GPS, actividad, popups)
 │   ├── dom.js            referencias a elementos del DOM (una sola vez)
-│   ├── actividad.js      cronómetro, HUD, traza, guardado de sesiones
-│   ├── proximidad.js     detección ≤ 50 m de una ruta + prompt (cooldown 20 s)
-│   ├── geolocalizacion.js GPS: seguimiento continuo, errores, marcador del usuario
-│   ├── mapa.js           abrir/cerrar mapa, dibujo de rutas y popups
-│   ├── eventos.js        tarjetas de la sección Eventos
-│   ├── navegacion.js     mostrar/ocultar secciones + menú móvil
-│   ├── historial.js      localStorage: guardado, lectura, render y migración
-│   ├── tema.js           modo oscuro persistente (clave `runwell-tema`)
-│   └── main.js           punto de entrada: conecta botones ↔ módulos
+│   ├── actividad.js      Actividad: cronómetro, HUD, traza, guardado de sesiones
+│   ├── proximidad.js     ProximityDetector: detección ≤ 50 m + prompt (cooldown 20 s)
+│   ├── geolocalizacion.js GeolocationService: seguimiento GPS, errores, marcador
+│   ├── mapa.js           MapController: abrir/cerrar mapa, dibujo de rutas y popups
+│   ├── eventos.js        EventosController: tarjetas de la sección Eventos
+│   ├── navegacion.js     Navegacion: mostrar/ocultar secciones + menú móvil
+│   ├── historial.js      HistoryRepository: localStorage (guardado, lectura, migración)
+│   ├── tema.js           Tema: modo oscuro persistente (clave `runwell-tema`)
+│   ├── auth.js           AuthService: modal de login/registro y sesión
+│   ├── chatbot.js        Chatbot: asistente de la interfaz
+│   ├── logs.js           Logger: eventos y crashes → Supabase Storage (bucket `logs`)
+│   └── main.js           raíz de composición: instancia y conecta las piezas
 ```
 
-Dependencias (sin ciclos): `datos/util/estado/dom` → `historial` → `actividad` →
+Estilo orientado a objetos: `EmisorEventos` (Observer) → `bus` + `ServicioBase` +
+`StateStore`; 9 servicios heredan de `ServicioBase`; `Repositorio` →
+`HistoryRepository`; `TipoActividad` → `Trote` / `Carrera`. Los servicios no
+importan al logger: publican con `registrar(...)` y el `Logger` se suscribe al
+bus.
+
+Dependencias: `datos/util/estado/dom` → `historial` → `actividad` →
 `proximidad` → `geolocalizacion` → `mapa` → `eventos`; `main.js` importa todos.
+Hay un ciclo intencional `actividad ↔ mapa` (resuelto por hoisting de las
+declaraciones de función).
 
 ## Funcionalidades
 
@@ -66,7 +81,10 @@ Dependencias (sin ciclos): `datos/util/estado/dom` → `historial` → `activida
 - Traza del recorrido: línea punteada azul que crece mientras hay actividad.
 - Panel flotante en vivo (`#hud-actividad`): tiempo, distancia y ritmo min/km.
 - Historial de sesiones en `localStorage` (clave `runwell-historial`), con
-  migración automática de las claves/formatos antiguos.
+  migración automática de las claves/formatos antiguos. Al detener, la sesión
+  se guarda localmente y se sincroniza en la tabla `actividades` de Supabase
+  (`tipo`, `tiempo`, `distancia`); si esa subida falla, solo se avisa por
+  consola y el registro local sigue ahí.
 - Modo oscuro persistente (`runwell-tema`).
 - **Logs de la página a Supabase Storage** (`js/logs.js`): captura crashes
   (errores JS no manejados, promesas rechazadas y recursos rotos) y eventos de
@@ -89,3 +107,24 @@ Dependencias (sin ciclos): `datos/util/estado/dom` → `historial` → `activida
 - Se sirve en Vercel; backend en **Supabase**: auth con avatar (bucket
   `avatars`), guardado de actividades (tabla `actividades`) y logs de la
   página (bucket `logs`).
+
+### Sobre la clave de Supabase
+
+`supabase-config.js` está versionado en el repo a propósito. Contiene
+`SUPABASE_URL` y `SUPABASE_KEY`, donde la key es de tipo
+`sb_publishable_...`: una **clave pública de cliente** que Supabase diseñó para
+ir embebida en el frontend. No es un secreto y no otorga accesos por sí sola.
+
+La seguridad del proyecto **no depende de ocultarla**, sino de lo que sí
+realmente protege los datos:
+
+- **RLS** en todas las tablas con datos de usuario, asociando cada fila con
+  `auth.uid()` y usando `WITH CHECK` para impedir que un cliente escriba filas
+  asignadas a otro.
+- **Policies de Storage** que restringen SELECT/INSERT/UPDATE/DELETE en
+  `storage.objects` al dueño del objeto (`metadata->>'owner'`).
+- **Buckets privados** para datos de usuario, con signed URLs para compartir.
+
+La `service_role` (privilegios completos, salta RLS) nunca debe llegar al
+navegador: si alguna vez hace falta, va en el servidor / Edge Functions.
+Detalle completo en `Documentacion del desarrollo/Sprints/Documentación Supabase.md`.
