@@ -1,179 +1,192 @@
 # Seguridad en Supabase
 
-Recomendaciones y políticas para asegurar el backend en Supabase del proyecto. Incluye: políticas RLS (Row Level Security) para tablas clave, configuración de Storage (buckets privados, metadata, signed URLs), manejo de claves y pruebas. 
+RunWell no tiene servidor propio: lo único que protege los datos es la
+configuración de Supabase. La clave del cliente `sb_publishable_...` va en el
+frontend **a propósito** — es un valor público, no un secreto. Lo que la
+sostiene son las políticas RLS y de Storage descritas aquí.
 
 ---
 
-## Principios generales
-- Habilitar RLS en todas las tablas que contienen datos por usuario.
-- Usar auth.uid() para asociar filas a la identidad autenticada.
-- Usar WITH CHECK para evitar que un usuario cree/edite filas asignadas a otro usuario.
-- Nunca exponer la service_role key en el cliente (sólo en servidor/Edge Functions).
-- Mantener buckets de Storage privados para datos de usuario; usar signed URLs para compartir temporalmente.
-- Auditar cambios y probar políticas con cuentas de prueba.
+## 1. Qué usa la aplicación
+
+| Recurso | Tipo | Uso | Operaciones que hace la app |
+|---|---|---|---|
+| `actividades` | tabla | historial de sesiones | **solo `INSERT`** |
+| `avatars` | bucket **público** | foto de perfil | `upload` + `getPublicUrl` |
+| `logs` | bucket **privado** | telemetría y crashes | `upload` |
+
+No hay más tablas ni buckets, y **no hay ningún `SELECT` en toda la
+aplicación**: el historial que se muestra en pantalla sale de `localStorage`.
+El perfil tampoco vive en una tabla — `signUp` guarda `first_name`,
+`last_name` y `avatar_url` en los metadatos del usuario de Auth.
+
+Columnas que envía el cliente: `tipo` (`Trote` / `Carrera`), `tiempo`
+(`MM:SS`) y `distancia` (km con 2 decimales). El `INSERT` **no envía
+`user_id`** ni comprueba sesión: la tabla lo rellena en el servidor. La
+escritura local ocurre antes que el `INSERT`, así que si la petición falla
+solo se pierde la sincronización (el error va a la consola).
 
 ---
 
-## Políticas RLS recomendadas (ejemplos)
-Adapta los nombres de tablas/columnas. Estos ejemplos asumen tablas: `runs`, `profiles`, `routes`, `logs`. Ejecuta en la pestaña SQL de Supabase.
+## 2. Políticas RLS — tabla `actividades`
+
+Como la app solo inserta, la tabla necesita una política de `INSERT` y
+**ninguna de `SELECT`**: sin política de lectura, nadie puede leer el
+historial con la clave pública.
 
 ```sql
--- runs (historial de actividad)
-ALTER TABLE public.runs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.actividades ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Select own runs" ON public.runs
-  FOR SELECT
-  USING (user_id = auth.uid());
-
-CREATE POLICY "Insert run as self" ON public.runs
+-- Solo INSERT. `anon` es necesario: el INSERT no exige sesión.
+CREATE POLICY "actividades_insert" ON public.actividades
   FOR INSERT
-  WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "Update own runs" ON public.runs
-  FOR UPDATE
-  USING (user_id = auth.uid())
-  WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "Delete own runs" ON public.runs
-  FOR DELETE
-  USING (user_id = auth.uid());
+  TO anon, authenticated
+  WITH CHECK (true);
 ```
 
-```sql
--- profiles (perfil de usuario: id = uid)
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+Estado verificado en el SQL Editor: RLS activo y **una única política**,
+`actividades_insert` (`cmd = insert`). Consulta sin sesión con la clave
+pública → `[]`, es decir 0 filas visibles (devolvía filas de otros usuarios
+antes de aplicar este bloque).
 
-CREATE POLICY "Select own profile" ON public.profiles
-  FOR SELECT
-  USING (id = auth.uid());
+---
 
-CREATE POLICY "Modify own profile" ON public.profiles
-  FOR ALL
-  USING (id = auth.uid())
-  WITH CHECK (id = auth.uid());
-```
+## 3. Políticas de Storage
 
-```sql
--- routes (si algunas rutas son públicas)
-ALTER TABLE public.routes ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Select public or owner routes" ON public.routes
-  FOR SELECT
-  USING (is_public = true OR owner = auth.uid());
-
-CREATE POLICY "Manage routes by owner or admin" ON public.routes
-  FOR ALL
-  USING (owner = auth.uid() OR (auth.role() = 'authenticated' AND (current_setting('jwt.claims.role', true) = 'admin')))
-  WITH CHECK (owner = auth.uid() OR (auth.role() = 'authenticated' AND (current_setting('jwt.claims.role', true) = 'admin')));
-```
+**`avatars`** — tiene que ser **público**: el registro usa `getPublicUrl()`,
+y con bucket privado esa URL no devolvería nada. La subida ocurre **antes**
+del `signUp`, es decir sin sesión, y va a la raíz del bucket como
+`<marca-tiempo>.<ext>`:
 
 ```sql
--- logs (telemetría sensible)
-ALTER TABLE public.logs ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Insert logs as self" ON public.logs
+CREATE POLICY "avatars_insert" ON storage.objects
   FOR INSERT
-  WITH CHECK (user_id = auth.uid());
-
-CREATE POLICY "Select own logs" ON public.logs
-  FOR SELECT
-  USING (user_id = auth.uid());
+  TO anon, authenticated
+  WITH CHECK (bucket_id = 'avatars' AND name !~ '/' AND char_length(name) <= 60);
 ```
 
-Notas:
-- Si permites lecturas públicas en una tabla, añade columna `is_public` y úsala en USING.
-- current_setting('jwt.claims.role', true) permite leer claims personalizados si los incluyes en el JWT (configura con cuidado).
+Riesgo aceptado: cualquiera con la URL ve la foto de perfil. Cerrarlo
+exigiría bucket privado + signed URL desde una Edge Function, que **no está
+implementado**.
 
----
-
-## Storage: buckets, metadata y políticas
-Recomendaciones:
-- Crear buckets privados para archivos de usuario (fotos, GPX, etc.).
-- Al subir objetos desde el cliente, añadir metadata `owner = auth.uid()`.
-- Habilitar RLS sobre `storage.objects` y restringir SELECT/INSERT/UPDATE/DELETE al owner.
-
-Ejemplo (storage.objects):
+**`logs`** — **privado**. La ruta real del archivo es
+`<uuid>/parte-NNNN.json`, donde el `uuid` lo genera el cliente con
+`crypto.randomUUID()`. `logs.js` no comprueba sesión porque los eventos de
+crash y de carga de página se registran también desde la pantalla de login:
 
 ```sql
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "storage_select_owner" ON storage.objects
-  FOR SELECT
-  USING ((metadata ->> 'owner')::text = auth.uid());
-
-CREATE POLICY "storage_insert_owner" ON storage.objects
+CREATE POLICY "logs_insert" ON storage.objects
   FOR INSERT
-  WITH CHECK ((metadata ->> 'owner')::text = auth.uid());
-
-CREATE POLICY "storage_delete_owner" ON storage.objects
-  FOR DELETE
-  USING ((metadata ->> 'owner')::text = auth.uid());
-
-CREATE POLICY "storage_update_owner" ON storage.objects
-  FOR UPDATE
-  USING ((metadata ->> 'owner')::text = auth.uid())
-  WITH CHECK ((metadata ->> 'owner')::text = auth.uid());
+  TO anon, authenticated
+  WITH CHECK (
+    bucket_id = 'logs'
+    AND name ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/parte-[0-9]{4}\.json$'
+  );
 ```
 
-Subidas desde cliente:
-- En supabase-js: await supabase.storage.from('private-bucket').upload(path, file, { metadata: { owner: supabase.auth.user().id } })
-- RLS WITH CHECK evita que un cliente ponga metadata.owner distinto del JWT.
+### Estado final de `storage.objects`
 
-Descargas y compartición:
-- Para compartir temporalmente: generar signed URLs desde servidor/Edge Function (usar service_role key en secreto).
-- Para descargas directas con usuario autenticado, las políticas RLS permiten al SDK del cliente descargar si el owner coincide.
+RLS está activo en la tabla de Storage (`relrowsecurity = true`) y quedan
+**tres** políticas, verificadas en el SQL Editor:
 
----
+| Política | Comando | Roles | Condición |
+|---|---|---|---|
+| `avatars_insert` | `INSERT` | anon, authenticated | bucket `avatars`, sin `/`, ≤ 60 caracteres |
+| `logs_insert` | `INSERT` | anon, authenticated | bucket `logs`, `<uuid>/parte-NNNN.json` |
+| `rw_avatars_select` | `SELECT` | anon | bucket `avatars` |
 
-## Signed URLs (Edge Function — esquema)
-1. El cliente solicita un signed URL a tu Edge Function/proxy (incluye token del usuario).
-2. La función verifica que el usuario tiene derecho al recurso (opcional).
-3. La función usa la service_role key en secreto para crear el signed URL:
-   - supabaseAdmin.storage.from('private-bucket').createSignedUrl(path, 60)
-4. Devuelve el URL al cliente.
+- **`logs` no tiene ninguna política de `SELECT`**: con la clave pública ni
+  siquiera se puede listar el bucket — la lectura devuelve `404 not_found`.
+- **`avatars` sí tiene `SELECT`**, lo mismo que ya cubre `getPublicUrl()`:
+  el bucket es público, así que sería redundante quitarlo.
+- **No hay ninguna política de `UPDATE` ni `DELETE`:** la app no actualiza ni
+  borra nada de Storage y, de paso, nadie desde el cliente puede sobrescribir
+  ni borrar archivos ajenos.
 
-Importante: verificar permisos antes de crear signed URL para evitar leaks si alguien conoce paths.
+**Limpieza aplicada.** El proyecto arrastraba políticas legacy creadas para
+que la subida funcionara sin sesión — `rw_logs_select`, `rw_logs_update`,
+`rw_logs_insert`, `rw_avatars_insert`, `rw_avatars_update` y
+`Permitir subida de avatares 1oj01fe_0`. Las de `SELECT`/`UPDATE` sobre
+`logs` dejaban **descargables los JSON con las coordenadas del `heartbeat`**
+a cualquiera con la clave pública; se retiraron junto con los `INSERT`
+duplicados, que cubren las dos políticas de la tabla. Los buckets no cambian:
+el tamaño máximo y los tipos permitidos se limitan en su configuración
+(`file_size_limit`, `allowed_mime_types`), no dentro de la política.
 
----
+Verificación externa (sin sesión, con la misma clave que usa la app):
 
-## Gestión de claves y roles
-- Anon key: para clientes (navegador). No anules RLS desde el cliente.
-- Service_role key: sólo en servidor/Edge functions; omite RLS (privilegios completos). Guardar en secret manager, nunca en código público.
-- Rotar keys si sospechas filtración.
-- Limitar privilegios de cuentas de servicio donde sea posible.
-
----
-
-## Buenas prácticas operativas
-- Habilitar RLS por defecto en nuevas tablas con datos de usuario.
-- Revisar las políticas periódicamente (code review / auditoría).
-- Mantener una tabla de auditoría para cambios sensibles (escrita desde backend con service_role).
-- Restringir CORS/orígenes que puedan usar tu anon key.
-- Evitar exponer metadata sensible en consultas públicas.
-- Usar vistas/functs para devolver solo columnas permitidas (en lugar de exponer toda la tabla).
-
----
-
-## Pruebas y debugging de políticas
-- Crear usuarios de prueba en Supabase Auth y generar tokens.
-- Usar la pestaña SQL / Policies UI para probar consultas como distintos usuarios.
-- Verificar que:
-  - Usuario A no puede SELECT/UPDATE/DELETE filas de Usuario B.
-  - No se puede INSERT con user_id distinto al auth.uid().
-  - Subida de archivo con metadata.owner distinto falla.
-- Para storage: probar upload/download desde cliente autenticado y desde anon.
+```
+GET /storage/v1/object/logs/<uuid>/parte-0001.json  → 404 not_found
+POST /storage/v1/object/list/logs                   → []
+GET /storage/v1/object/public/avatars/<archivo>     → 200
+GET /rest/v1/actividades?select=*                   → []
+```
 
 ---
 
-## Riesgos frecuentes y mitigaciones
-- Filtración de service_role -> rotar la key y revisar logs, mover a secret manager.
-- Buckets públicos con datos personales -> auditar buckets, convertir a private.
-- Políticas incompletas que permiten escalation -> revisar policies con auditoría y tests.
-- Metadata manipulable -> usar WITH CHECK que compara metadata con auth.uid().
+## 4. Datos de geolocalización en los logs
+
+Es la parte más sensible de la telemetría.
+
+**Solo un evento lleva coordenadas.** De todos los tipos que escribe el
+`Logger`, únicamente `heartbeat` incluye `pos: [lat, lng]`:
+
+| Evento | Cadencia | Ubicación |
+|---|---|---|
+| `heartbeat` | cada 60 s | **`pos: [lat, lng]`** + `dist_m`, `segundos`, `activa` |
+| `gps-lectura` | al pedir posición | solo `precision` (metros), **sin** coordenadas |
+| `gps-error` | fallo de GPS | solo el código (`PERMISSION_DENIED`, etc.) |
+| `carga-pagina` | una vez | `ref`, `pantalla`, `navegador` |
+| resto | interacción | ninguno |
+
+Además, **a todos** los eventos se les añaden `t` (hora ISO), `tipo` y
+`pagina` (qué sección estaba abierta).
+
+**Precisión:** `pos` se redondea a **5 decimales**
+(`Math.round(x * 1e5) / 1e5`), que equivale a **≈ 1 m**. No es una
+generalización: es una ubicación con precisión de puerta de entrada. Si el
+GPS no ha dado permiso, `pos` es `null` y el `heartbeat` no lleva ubicación.
+
+**Dónde queda:** bucket privado `logs`, en `<uuid>/parte-NNNN.json`. Cada
+archivo acumula los eventos de una sesión, y ese identificador es aleatorio
+en el cliente, **no** está vinculado a `auth.uid()`.
+
+**Quién puede leerlo:** nadie desde el cliente — la política de la sección 3
+no incluye `SELECT`. Solo el `service_role` desde la consola de Supabase.
+
+**Cuánto se guarda:** el código **no borra nada**. No hay retención ni purga:
+los archivos se acumulan hasta que se limpien desde el servidor.
+
+**Riesgos:**
+
+1. *Reidentificación por trayectoria.* `heartbeat` cada 60 s con `pos` a ~1 m
+   permite reconstruir hacia dónde se mueve; dos o tres muestras bastan para
+   inferir dónde vive. Es el riesgo mayor.
+2. *Fingerprint combinado.* `carga-pagina` añade user agent, resolución y
+   referrer, que junto con las coordenadas y las marcas de tiempo aumentan la
+   trazabilidad.
+3. *Retención indefinida.* El historial de ubicaciones crece sin límite.
+
+**Mitigaciones propuestas (ninguna está aplicada hoy):** redondear `pos` a 3
+decimales (≈ 110 m, un cambio de una línea en `resumenApp()` que no afecta al
+mapa ni a la traza), no guardar `pos` cuando `activa` es `false`, y fijar una
+ventana de retención con borrado servidor-side. La única mitigación **ya
+activa** es que el bucket `logs` esté privado y sin política de `SELECT`.
 
 ---
 
-## Recursos y referencias
+## 5. Claves
+
+- **`sb_publishable_...`**: clave pública de cliente, versionada a propósito
+  en `supabase-config.js`. No protege nada por sí sola; contra ella están las
+  políticas de las secciones 2 y 3.
+- **`service_role`**: privilegios completos, salta RLS. Solo en servidor o
+  Edge Functions, nunca en el navegador ni en el repositorio.
+
+---
+
+## Referencias
+
 - Supabase RLS: https://supabase.com/docs/guides/auth/row-level-security
 - Supabase Storage: https://supabase.com/docs/guides/storage
-- Documentación de supabase-js: https://supabase.com/docs/reference/javascript
+- supabase-js: https://supabase.com/docs/reference/javascript

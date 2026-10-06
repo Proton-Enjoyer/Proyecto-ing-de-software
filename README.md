@@ -115,16 +115,19 @@ declaraciones de función).
 `sb_publishable_...`: una **clave pública de cliente** que Supabase diseñó para
 ir embebida en el frontend. No es un secreto y no otorga accesos por sí sola.
 
-La seguridad del proyecto **no depende de ocultarla**, sino de lo que sí
-realmente protege los datos:
+La seguridad del proyecto **no depende de ocultarla**, sino de las políticas
+RLS y de Storage. Estado real hoy:
 
-- **RLS** en todas las tablas con datos de usuario, asociando cada fila con
-  `auth.uid()` y usando `WITH CHECK` para impedir que un cliente escriba filas
-  asignadas a otro.
-- **Policies de Storage** que restringen SELECT/INSERT/UPDATE/DELETE en
-  `storage.objects` al dueño del objeto (`metadata->>'owner'`).
-- **Buckets privados** para datos de usuario, con signed URLs para compartir.
+- **Tabla `actividades`**: política de **solo `INSERT`** y ninguna de
+  `SELECT`, así que la app escribe pero la tabla no se puede leer con la
+  clave pública. El cliente no envía `user_id`: lo rellena el servidor.
+- **Bucket `logs`**: privado, solo política de `INSERT` con la forma real del
+  archivo (`<uuid>/parte-NNNN.json`). Sin `SELECT`: la telemetría —incluidas
+  las coordenadas del `heartbeat`— solo la lee el `service_role`.
+- **Bucket `avatars`**: público, porque el registro usa `getPublicUrl()`. La
+  subida es anónima porque ocurre antes del `signUp`.
 
 La `service_role` (privilegios completos, salta RLS) nunca debe llegar al
 navegador: si alguna vez hace falta, va en el servidor / Edge Functions.
-Detalle completo en `Documentacion del desarrollo/Sprints/Documentación Supabase.md`.
+Detalle completo, políticas SQL y el manejo de los datos de geolocalización
+en `Documentacion del desarrollo/Sprints/Documentación Supabase.md`.
