@@ -62,7 +62,14 @@ Pendiente de resolver **antes de la aprobación para transferencia**.
       al día (y sin la mención a *Template Method*, que el punto 6 excluye).
       **Pasada 2026-10-06: 156/156 checks (geo 23, popup 30, e2e 37, POO 58,
       logs 8), 0 fallos, 0 errores de consola.**
-- [ ] **8. Capturas/evidencias de las principales funcionalidades.**
+- [x] **8. Capturas/evidencias de las principales funcionalidades.**
+      → Carpeta nueva `Sprints/Evidencias/` con **7 capturas PNG** (portada,
+      mapa con rutas, eventos, geolocalización, historial, modo oscuro,
+      chatbot) y un `README.md` índice: nombre de archivo, qué muestra cada
+      una, cómo tomar capturas nuevas y estado. Nombres normalizados
+      (kebab-case, sin typos). Quedaron fuera el panel HUD de la actividad
+      en vivo y el modal de login — consta en la sección "No incluidas"
+      del índice por si se añaden después.
 - [x] **9. Cierre del proyecto** — logros, dificultades, soluciones,
       mantenimiento, recomendaciones y conclusiones.
       → `Sprints/Cierre de proyecto.md` ya tenía las 6 secciones; se
