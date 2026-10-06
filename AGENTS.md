@@ -23,6 +23,7 @@ css/variables.css   :root, tema oscuro, reset — se carga primero (el orden de 
 css/base.css        <link> importa: define el cascade)
 css/mapa.css
 css/secciones.css
+css/chatbot.css    ventana flotante del asistente (chips, mensajes)
 css/responsive.css
 js/base.js          abstracciones compartidas: `EmisorEventos`, `bus`, `EVENTO`,
                     `ServicioBase`, `Repositorio`. Sin imports a propósito, para
@@ -61,15 +62,17 @@ Los servicios **no importan al logger**: publican con `this.registrar(...)` y el
 
 Grafo de dependencias (sin ciclos): `datos/util/estado/dom` → `historial` → `actividad` → `proximidad` → `geolocalizacion` → `mapa` → `eventos`; `main.js` importa todos. Si un módulo necesita algo de otro que lo precede en el grafo, la función se llama en tiempo de ejecución (no en la evaluación del módulo) — nunca tocar estado al cargar. Existe un ciclo **intencional** `actividad ↔ mapa` (resuelto por hoisting de `function` declarations); por eso los módulos de servicio conservan su capa de `export function`.
 
-## Funcionalidad planificada (según casos de uso)
-Registro/login, seleccionar/filtrar rutas,
-dashboard de estadísticas e historial de progreso.
+## Funcionalidad pendiente (según casos de uso)
+- Filtrado/selección de rutas (por zona, distancia o dificultad).
+- Dashboard de estadísticas e historial de progreso (agregados).
 
-Ya hay integración con Supabase como BaaS: auth (`js/auth.js`), historial y
-actividades en tablas propias, avatares en Storage (bucket `avatars`) y logs de
-uso (bucket `logs`). No hay servidor propio ni build: el frontend es puro y se
-sirve tal cual (GitHub Pages / Vercel). La seguridad está en las políticas RLS
-y de Storage, no en ocultar la clave de cliente.
+Registro e inicio de sesión **ya están implementados** (`js/auth.js`: modal,
+sesión y avatar), así que no figuran entre lo pendiente. El frontend se
+integra con Supabase como BaaS: auth, historial y actividades en tablas
+propias, avatares en Storage (bucket `avatars`) y logs de uso (bucket
+`logs`). No hay servidor propio ni build: el frontend es puro y se sirve
+tal cual (Vercel). La seguridad está en las políticas RLS y de Storage, no
+en ocultar la clave de cliente.
 
 ## Notas de desarrollo
 - **Logs** (`js/logs.js`): eventos de uso y crashes se suben a Supabase

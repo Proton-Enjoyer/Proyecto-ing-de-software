@@ -6,8 +6,9 @@ entrenamiento personalizadas en la ciudad de Maracaibo, junto con un seguimiento
 en tiempo real de cada sesión de carrera.
 
 La aplicación está construida como un frontend puro con HTML, CSS y JavaScript,
-sin frameworks la página se hostea en Vercel y utiliza Supabase como backend. Para el mapeo y la visualización de rutas utiliza la
-librería Leaflet junto con los mapas de OpenStreetMap.
+sin frameworks. La página se hostea en Vercel y utiliza Supabase como backend.
+Para el mapeo y la visualización de rutas utiliza la librería Leaflet junto
+con los mapas de OpenStreetMap.
 
 Funcionalidades actuales:
 - Visualización de rutas predefinidas en Maracaibo (zonas de LUZ y Paseo Sur).
@@ -16,8 +17,11 @@ Funcionalidades actuales:
 - Cronómetro integrado en el mapa para iniciar y detener una sesión de carrera.
 - Geolocalización del usuario: marcador azul sobre el mapa, botón para centrar
   la vista en su ubicación y rastreo en vivo del GPS mientras corre una ruta.
+- Registro e inicio de sesión con sesión persistente y avatar de perfil.
+- Historial de sesiones en el navegador, con migración automática de los
+  formatos antiguos y copia sincronizada en Supabase.
 - Modo oscuro.
 
-La documentación del proyecto define además casos de uso planificados a futuro,
-como registro e inicio de sesión, selección y filtrado de rutas, dashboard de
-estadísticas e historial de progreso del usuario.
+La documentación del proyecto define además casos de uso pendientes a futuro,
+como el filtrado de rutas y un dashboard de estadísticas e historial de
+progreso del usuario.

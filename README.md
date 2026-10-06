@@ -4,7 +4,7 @@ Aplicación web de seguimiento de running: rutas predefinidas en Maracaibo, mapa
 actividades con cronómetro (trote/carrera) e historial de sesiones.
 
 Proyecto académico de Ingeniería de Software — frontend puro (HTML + CSS + JavaScript),
-sin frameworks, Utiliza Vercel para hostear la página y Supabase como Backend. Mapas con [Leaflet](https://leafletjs.com/) + OpenStreetMap.
+sin frameworks. Se hostea en Vercel y usa Supabase como backend. Mapas con [Leaflet](https://leafletjs.com/) + OpenStreetMap.
 
 ## Cómo ejecutarla
 
@@ -30,6 +30,7 @@ La geolocalización solo funciona en contextos seguros (HTTPS o `localhost`).
 │   ├── base.css          nav, hero, botones, switch de tema, menú hamburguesa
 │   ├── mapa.css          mapa, marcadores, popups, prompt, panel HUD, alerta GPS
 │   ├── secciones.css     eventos, historial y modo oscuro de tarjetas
+│   ├── chatbot.css       ventana flotante del asistente (chips, mensajes)
 │   └── responsive.css    media queries (móvil, navbar, menú desplegable)
 ├── js/
 │   ├── base.js           abstracciones: EmisorEventos, bus, ServicioBase, Repositorio
@@ -93,6 +94,10 @@ declaraciones de función).
   (`tipo`, `tiempo`, `distancia`); si esa subida falla, solo se avisa por
   consola y el registro local sigue ahí.
 - Modo oscuro persistente (`runwell-tema`).
+- **Registro e inicio de sesión** con sesión persistente (`js/auth.js`):
+  modal de login/registro, avatar de perfil (bucket `avatars`) y cierre de
+  sesión. El historial local y el avatar conviven con la copia sincronizada
+  en Supabase.
 - **Logs de la página a Supabase Storage** (`js/logs.js`): captura crashes
   (errores JS no manejados, promesas rechazadas y recursos rotos) y eventos de
   uso (secciones, mapa, actividad, login, GPS) más un heartbeat con el estado
@@ -120,6 +125,18 @@ llamadas reales y capturan cualquier `window.onerror`. Última pasada completa
 Con cómo reproducirla (`pruebas/servidor.py` + `pruebas/correr.py`) y la
 evidencia cruda check por check, en
 `Documentacion del desarrollo/Sprints/Pruebas.md`.
+
+## Documentación
+
+- `Documentacion del desarrollo/Sprints/Patrones de diseño.md` — patrones
+  implementados y, aparte, los que **no** lo están.
+- `Documentacion del desarrollo/Sprints/Pruebas.md` — pruebas, cómo
+  reproducirlas y evidencia cruda de la última pasada.
+- `Documentacion del desarrollo/Sprints/Documentación Supabase.md` —
+  esquema, políticas RLS/Storage y verificación de seguridad.
+- `Documentacion del desarrollo/Sprints/Cierre de proyecto.md` — cierre:
+  logros, dificultades, decisiones, mantenimiento y conclusiones.
+- `docs/diagrama-casos-uso.md` — casos de uso del sistema final (Mermaid).
 
 ## Datos guardados (localStorage)
 

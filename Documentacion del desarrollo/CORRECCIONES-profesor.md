@@ -14,8 +14,23 @@ Pendiente de resolver **antes de la aprobación para transferencia**.
 
 ## Lista
 
-- [ ] **1. README y documentación al día con `main`** — se indica que el sistema
-      no usa backend, pero la app ya integra Supabase (auth, persistencia, Storage).
+- [x] **1. README y documentación al día con `main`** — auditoría de los 7
+      `.md` + `Introduccion.txt` + el árbol de estructura. Corregido:
+      `AGENTS.md` presentaba *Registro/login* como **pendiente** cuando ya
+      existe (`js/auth.js`), citaba un archivo inexistente
+      `docs/diagrama-casos-uso.md` y mencionaba GitHub Pages como
+      despliegue (es Vercel); `README.md` no tenía `css/chatbot.css` en el
+      árbol ni el registro/login entre las funcionalidades, y tenía una
+      errata de puntuación; `Introduccion.txt` dejaba el registro/login
+      como futuro y le faltaba el punto tras "sin frameworks". Creado
+      `docs/diagrama-casos-uso.md` (casos de uso del sistema final en
+      Mermaid, **render verificado**: 41 nodos) y añadida una sección
+      "Documentación" al README como índice. Verificado que ningún `.md`
+      del repo queda con "sin backend", entidades viejas
+      (*Geolocalizador*, *Usuario*, *Coach*…), tablas inventadas
+      (`runs`/`profiles`/`routes`) ni enlaces rotos. El `RunWELL.pdf` del
+      usuario ya describe bien Supabase/Vercel; solo le falta mencionar
+      auth (asunto suyo, no del repo).
 - [ ] **2. Planificación completa** — actividades, hitos, responsabilidades,
       cronograma/Gantt y análisis de riesgos.
 - [ ] **3. Especificación final de requisitos** — necesidades, requisitos
