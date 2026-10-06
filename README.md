@@ -53,10 +53,17 @@ La geolocalización solo funciona en contextos seguros (HTTPS o `localhost`).
 ```
 
 Estilo orientado a objetos: `EmisorEventos` (Observer) → `bus` + `ServicioBase` +
-`StateStore`; 9 servicios heredan de `ServicioBase`; `Repositorio` →
+`StateStore`; 10 clases de servicio heredan de `ServicioBase`; `Repositorio` →
 `HistoryRepository`; `TipoActividad` → `Trote` / `Carrera`. Los servicios no
 importan al logger: publican con `registrar(...)` y el `Logger` se suscribe al
 bus.
+
+Patrones de diseño **implementados** (solo los que se pueden señalar en el
+código): Observer, Repository, singleton por módulo, herencia/polimorfismo con
+encapsulación e inyección de dependencias. Cada uno con su archivo, su porqué
+y su verificación en
+`Documentacion del desarrollo/Sprints/Patrones de diseño.md`, que también
+deja constancia de los patrones que **no** están implementados.
 
 Dependencias: `datos/util/estado/dom` → `historial` → `actividad` →
 `proximidad` → `geolocalizacion` → `mapa` → `eventos`; `main.js` importa todos.

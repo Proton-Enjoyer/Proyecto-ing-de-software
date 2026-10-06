@@ -54,7 +54,7 @@ README.md           cómo ejecutarla, estructura y datos guardados
 ```
 
 Arquitectura POO: `EmisorEventos` (Observer) → `bus` + `ServicioBase` + `StateStore`;
-`ServicioBase` → 9 servicios; `Repositorio` → `HistoryRepository`;
+`ServicioBase` → 10 clases de servicio; `Repositorio` → `HistoryRepository`;
 `TipoActividad` → `Trote`/`Carrera`. `main.js` es la única raíz de composición.
 Los servicios **no importan al logger**: publican con `this.registrar(...)` y el
 `Logger` se suscribe al `bus` — eso es lo que rompe el acoplamiento.
