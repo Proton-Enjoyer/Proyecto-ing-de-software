@@ -26,8 +26,16 @@ Pendiente de resolver **antes de la aprobación para transferencia**.
 - [ ] **6. Documentar solo los patrones de diseño realmente implementados.**
 - [ ] **7. Documentación de pruebas y resultados, con evidencia verificable.**
 - [ ] **8. Capturas/evidencias de las principales funcionalidades.**
-- [ ] **9. Cierre del proyecto** — logros, dificultades, soluciones,
+- [x] **9. Cierre del proyecto** — logros, dificultades, soluciones,
       mantenimiento, recomendaciones y conclusiones.
+      → `Sprints/Cierre de proyecto.md` ya tenía las 6 secciones; se
+      actualizó el contenido al sistema actual: desaparece *"entorno sin
+      backend"*, las entidades viejas (*Geolocalizador, Gestor de
+      Actividad…*) se sustituyen por las clases reales, y se añaden a los
+      logros la integración con Supabase (auth, avatares, `actividades`,
+      logs), el refactor POO, la seguridad verificada y los arneses.
+      Añadidos a mantenimiento la retención de `logs` y el cuidado de las
+      políticas RLS.
 - [x] **10. Seguridad de Supabase** — políticas RLS y de Storage, más el manejo
       de los datos de geolocalización almacenados en `logs`.
       → `Documentación Supabase.md` (396 → 155 líneas): esquema real
