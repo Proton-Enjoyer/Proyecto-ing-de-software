@@ -142,6 +142,12 @@ evidencia cruda check por check, en
 - `Documentacion del desarrollo/Sprints/Diagrama de clases Final.png` y
   `Sprints/Diagrama de Casos de Uso Final.png` — UML del sistema final
   (clases y casos de uso), exportados desde código Mermaid.
+- `Documentacion del desarrollo/Sprints/Diagrama de Gantt Final.png` —
+  planificación: actividades, hitos y responsables (cronograma).
+- `Documentacion del desarrollo/Sprints/Metodologias de desarrollo de SW V2, Grupo 6.docx`
+  — metodología incremental y planificación de los incrementos.
+- `Documentacion del desarrollo/Sprints/Matriz y Clasificacion de Riesgos - Sistema Wellness (1).docx`
+  — análisis y clasificación de riesgos del proyecto.
 
 ## Datos guardados (localStorage)
 

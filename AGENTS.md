@@ -54,7 +54,7 @@ supabase.js         cliente de Supabase (browser client)
 Documentacion del desarrollo/Sprints/
                     UML del sistema final en PNG: `Diagrama de clases Final.png`
                     y `Diagrama de Casos de Uso Final.png` (exportados desde
-                    código Mermaid)
+                    código Mermaid); planificación en `Diagrama de Gantt Final.png`
 README.md           cómo ejecutarla, estructura y datos guardados
 ```
 
