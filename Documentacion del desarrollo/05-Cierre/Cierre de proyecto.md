@@ -5,14 +5,14 @@
 1. Logros
 ---------
 - Implementación completa del frontend modular (ES Modules) con carga segura vía HTTP.
-- Mapa interactivo con Leaflet y rutas predefinidas (mock data en `js/datos.js`) mostrando rutas en Maracaibo (LUZ y Paseo Sur).
+- Mapa interactivo con Leaflet y rutas predefinidas (mock data en `js/core/datos.js`) mostrando rutas en Maracaibo (LUZ y Paseo Sur).
 - Geolocalización con marcador de usuario, seguimiento continuo (`watchPosition`) y manejo de permisos/errores según la política: automático silencioso (consola) y acciones solicitadas por el usuario con mensajes en pantalla (`#alerta-gps`).
 - Detección de proximidad a rutas (colisión punto-segmento ≤ 50 m) con prompt para iniciar actividad y cooldown de 20 s.
 - Actividad tipo trote/carrera con cronómetro, traza dinámica de recorrido (línea punteada azul), HUD en vivo con tiempo, distancia y ritmo.
 - Guardado y migración de historial en `localStorage` (clave `runwell-historial`) con compatibilidad hacia formatos antiguos.
 - Sistema de tema (modo oscuro) persistente en `localStorage` (`runwell-tema`).
 - Sistema de logs que sube eventos a Supabase Storage (bucket `logs`) cada 60 s, al crash y al cerrar la pestaña, conservándolos en buffer si falla la subida.
-- Integración con **Supabase como BaaS sin servidor propio**: registro/login con sesión (`js/auth.js`), foto de perfil en el bucket `avatars`, sincronización del historial en la tabla `actividades` y telemetría/crashes en `logs`.
+- Integración con **Supabase como BaaS sin servidor propio**: registro/login con sesión (`js/servicios/auth.js`), foto de perfil en el bucket `avatars`, sincronización del historial en la tabla `actividades` y telemetría/crashes en `logs`.
 - Refactor a **Programación Orientada a Objetos** manteniendo el comportamiento: `EmisorEventos` (patrón Observer) y el `bus` desacoplan servicios y logger, `ServicioBase` da la base a las 10 clases de servicio, `StateStore` concentra el estado compartido, `Repositorio` → `HistoryRepository` persiste el historial y `TipoActividad` → `Trote`/`Carrera` modelan la jerarquía de dominio. `js/main.js` es la única raíz de composición.
 - Seguridad de la base de datos **verificada, no solo documentada**: RLS activo en `actividades` con una única política de `INSERT` y en `storage.objects` con 3 políticas; comprobado con la clave pública que la tabla devuelve 0 filas y los logs de geolocalización no se pueden descargar (`Documentación Supabase.md`).
 - Validación automática con arneses de regresión (geolocalización, popup, extremo a extremo, POO y Logger): última pasada **23/23 · 30/30 · 37/37 · 58/58 · 8/8**, con 0 errores de consola.

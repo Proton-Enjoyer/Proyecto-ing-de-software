@@ -1,9 +1,9 @@
-// js/chatbot.js — Asistente flotante de respuestas rápidas.
+// js/servicios/chatbot.js — Asistente flotante de respuestas rápidas.
 //
 // Chatbot es un servicio sin estado propio (no necesita el estado compartido):
 // hereda de ServicioBase para poder publicar eventos al bus si hace falta.
 
-import { ServicioBase } from './base.js';
+import { ServicioBase } from '../core/base.js';
 
 const SUGERENCIAS = [
     "¿Cuál es la ruta más corta?",

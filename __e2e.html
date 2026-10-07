@@ -72,7 +72,7 @@ window.addEventListener('unhandledrejection', e => window.__errores.push('promis
         <section id="planes-section" class="planes-section hidden">
             <h2>Próximos Eventos</h2>
             <div class="planes-grid">
-                <!-- Se llenará dinámicamente desde js/eventos.js -->
+                <!-- Se llenará dinámicamente desde js/servicios/eventos.js -->
             </div>
         </section>
 
@@ -247,7 +247,7 @@ log('1-polyline-una-ruta', document.querySelectorAll('.leaflet-overlay-pane path
     document.querySelectorAll('.leaflet-overlay-pane path').length);
 
 // --- Abrir sin indice: las 4 rutas
-const M = await import('./js/mapa.js');
+const M = await import('./js/servicios/mapa.js');
 M.abrirMapa(); await w(1200);
 log('8-marcadores-todas-rutas', document.querySelectorAll('.custom-marker').length === 8,
     document.querySelectorAll('.custom-marker').length);
@@ -267,7 +267,7 @@ localStorage.setItem('runwell-historial', JSON.stringify([
   { id: 1, tipo: 'Trote', ruta: 'Ruta A', fecha: '1/1/2026 10:00 AM', tiempo: '30:00', distancia: '5.00', ritmo: '06:00' },
   { id: 2, tipo: 'Carrera', ruta: 'Ruta B', fecha: '2/1/2026 11:00 AM', tiempo: '20:00', distancia: '4.00', ritmo: '05:00' }
 ]));
-const H = await import('./js/historial.js');
+const H = await import('./js/servicios/historial.js');
 H.renderizarHistorial(); await w(250);
 log('historial-renderiza-2', document.querySelectorAll('#historial-lista .plane-card').length === 2,
     document.querySelectorAll('#historial-lista .plane-card').length);
@@ -319,7 +319,7 @@ $('close-auth-modal').click(); await w(200);
 log('modal-cierra', !visible($('auth-modal')));
 
 // --- GPS: ruta de codigo 1 (PERMISSION_DENIED) via el servicio
-const G = await import('./js/geolocalizacion.js');
+const G = await import('./js/servicios/geolocalizacion.js');
 G.geolocationService.manejarErrorGeolocalizacion({ code: 1, PERMISSION_DENIED: 1, message: 'User denied geolocation' });
 await w(300);
 const alerta = $('alerta-gps');

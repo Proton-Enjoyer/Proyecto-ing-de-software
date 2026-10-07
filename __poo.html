@@ -72,7 +72,7 @@ window.addEventListener('unhandledrejection', e => window.__errores.push('promis
         <section id="planes-section" class="planes-section hidden">
             <h2>Próximos Eventos</h2>
             <div class="planes-grid">
-                <!-- Se llenará dinámicamente desde js/eventos.js -->
+                <!-- Se llenará dinámicamente desde js/servicios/eventos.js -->
             </div>
         </section>
 
@@ -223,7 +223,7 @@ const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 await w(1000);
 
 // ---------- 1. base.js: jerarquia y encapsulacion ----------
-const B = await import('./js/base.js');
+const B = await import('./js/core/base.js');
 log('base-emite-eventos', typeof B.EmisorEventos === 'function');
 log('base-bus-Existe', B.bus instanceof B.EmisorEventos);
 log('base-EVENTO-es-canal-unico', B.EVENTO === 'evento', B.EVENTO);
@@ -254,7 +254,7 @@ log('repositorio-contrato-por-metodo', lanzan === 3, lanzan);
 log('repositorio-nombre', base.nombre === 'demo', base.nombre);
 
 // ---------- 2. EstadoStore: encapsulacion con # ----------
-const { estado } = await import('./js/estado.js');
+const { estado } = await import('./js/core/estado.js');
 log('estado-instancia', estado.constructor.name === 'StateStore', estado.constructor.name);
 log('estado-extiende-emisor', estado instanceof B.EmisorEventos);
 log('estado-campos-publicos-ocultos', estado.actividad && estado.actividad.activa === false,
@@ -277,7 +277,7 @@ log('estado-privados-no-enumerables', !propias.includes('actividad') || propias.
     { count: propias.length, muestra: propias.slice(0, 8) });
 
 // ---------- 3. TipoActividad: jerarquía (herencia y polimorfismo) ----------
-const A = await import('./js/actividad.js');
+const A = await import('./js/servicios/actividad.js');
 log('actividad-expone-Trote', typeof A.Trote === 'function');
 log('actividad-expone-Carrera', typeof A.Carrera === 'function');
 const trote = new A.Trote();
@@ -307,7 +307,7 @@ log('tipos-todas-subclases',
 const modulos = ['actividad', 'auth', 'chatbot', 'tema', 'navegacion', 'eventos',
                  'geolocalizacion', 'mapa', 'proximidad', 'historial', 'logs'];
 for (const m of modulos) {
-  const mod = await import('./js/' + m + '.js');
+  const mod = await import('./js/servicios/' + m + '.js');
   const nombres = Object.entries(mod).filter(([, v]) => v && typeof v === 'object' &&
       v.constructor && !(v.constructor === Object))
       .map(([k, v]) => k + ':' + v.constructor.name);
@@ -327,7 +327,7 @@ await w(200);
 B.bus.cancelar(B.EVENTO, verRegistro);
 
 // ---------- 5. HistoryRepository con storage inyectado ----------
-const H = await import('./js/historial.js');
+const H = await import('./js/servicios/historial.js');
 log('historial-clase', H.historyRepo && H.historyRepo.constructor.name === 'HistoryRepository',
     H.historyRepo && H.historyRepo.constructor.name);
 const memoria = {};
@@ -343,7 +343,7 @@ repo.limpiar();
 log('repo-limpia', repo.leer().length === 0);
 
 // ---------- 6. recursos.js ----------
-const R2 = await import('./js/recursos.js');
+const R2 = await import('./js/core/recursos.js');
 log('recursos-avatar-por-defecto', typeof R2.AVATAR_POR_DEFECTO === 'string' &&
     R2.AVATAR_POR_DEFECTO.startsWith('data:image/svg+xml'), R2.AVATAR_POR_DEFECTO.slice(0, 40));
 log('recursos-sin-placeholder', !R2.AVATAR_POR_DEFECTO.includes('placeholder'));
@@ -353,20 +353,20 @@ log('index-sin-placeholder', !htmlReal.includes('via.placeholder.com'));
 log('index-sin-avatar-vacio', !/<img[^>]*id="user-avatar-img"[^>]*\ssrc=/.test(htmlReal));
 
 // ---------- 7. Singleton: una sola instancia por modulo ----------
-const M = await import('./js/mapa.js');
-log('singleton-mapa', M.mapController && M.mapController === (await import('./js/mapa.js')).mapController);
-const E1 = await import('./js/estado.js');
-const E2 = await import('./js/estado.js');
+const M = await import('./js/servicios/mapa.js');
+log('singleton-mapa', M.mapController && M.mapController === (await import('./js/servicios/mapa.js')).mapController);
+const E1 = await import('./js/core/estado.js');
+const E2 = await import('./js/core/estado.js');
 log('singleton-estado', E1.estado === E2.estado);
 
 // ---------- 8. Logger suscrito al bus ----------
-const L = await import('./js/logs.js');
+const L = await import('./js/servicios/logs.js');
 const antes = L.logger ? true : false;
 log('logs-clase', antes && L.logger.constructor.name === 'Logger', L.logger && L.logger.constructor.name);
 log('logs-bucket', L.BUCKET_LOGS === 'logs' || true, Object.keys(L).join(','));
 
 // ---------- 9. Privados con # presentes en el codigo ----------
-const codigo = await (await fetch('./js/mapa.js')).text();
+const codigo = await (await fetch('./js/servicios/mapa.js')).text();
 log('mapa-usa-privados', /#\w+\s*[=;(]/.test(codigo), codigo.split('\n').filter(l => l.includes('#map')).slice(0,2));
 
 const ok = R.filter(x => x.ok).length;

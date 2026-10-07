@@ -1,13 +1,13 @@
-// js/proximidad.js — Detección de proximidad: ¿el usuario está cerca de alguna ruta?
+// js/servicios/proximidad.js — Detección de proximidad: ¿el usuario está cerca de alguna ruta?
 //
 // Si está a menos de UMBRAL_RUTA_METROS aparece el prompt para iniciar trote o
 // carrera, con un cooldown para no repetir el aviso spam.
 
-import { estado } from './estado.js';
-import { misRutas } from './datos.js';
-import { distanciaARuta } from './util.js';
-import { promptCercania, ppRuta, ppDist } from './dom.js';
-import { ServicioBase } from './base.js';
+import { estado } from '../core/estado.js';
+import { misRutas } from '../core/datos.js';
+import { distanciaARuta } from '../core/util.js';
+import { promptCercania, ppRuta, ppDist } from '../core/dom.js';
+import { ServicioBase } from '../core/base.js';
 
 const UMBRAL_RUTA_METROS = 50;     // radio para considerar "llegaste a la ruta"
 const COOLDOWN_PROMPT_MS = 20000;  // evita repetir el mismo aviso inmediatamente

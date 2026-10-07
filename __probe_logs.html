@@ -28,7 +28,7 @@ function reportar(pref) {
 setTimeout(() => reportar('LOGS|TIMEOUT-30s'), 30000);
 </script>
 <script type="module">
-import { log } from './js/logs.js';
+import { log } from './js/servicios/logs.js';
 
 // Baliza: el módulo importó logs.js correctamente
 fetch('/bc?d=' + encodeURIComponent('BALIZA|modulo-importo-logs'));

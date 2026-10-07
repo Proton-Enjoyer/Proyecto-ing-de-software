@@ -44,21 +44,21 @@ No hay servidor propio ni build: frontend puro servido en Vercel + Supabase.
 
 | ID | Requisito | Estado | Evidencia |
 |---|---|---|---|
-| RF01 | Registrarse, iniciar y cerrar sesión con correo y contraseña | Implementado | `js/auth.js` |
-| RF02 | Subir avatar a Supabase Storage | Implementado | `js/auth.js`, bucket `avatars` |
-| RF03 | Ver las rutas predefinidas dibujadas en el mapa | Implementado | `js/datos.js`, `js/mapa.js` |
-| RF04 | Ver los eventos programados y abrir su ruta en el mapa | Implementado | `js/eventos.js` |
-| RF05 | Iniciar y detener una actividad (trote o carrera) con cronómetro | Implementado | `js/actividad.js` (`TipoActividad` → `Trote`/`Carrera`) |
-| RF06 | Panel en vivo con tiempo, distancia y ritmo min/km | Implementado | `js/actividad.js` (`#hud-actividad`) |
-| RF07 | Dibujar la traza del recorrido mientras hay actividad | Implementado | `js/actividad.js` (`refrescarTraza()`) |
-| RF08 | Seguimiento GPS continuo y botón para centrarse en la ubicación | Implementado | `js/geolocalizacion.js` |
-| RF09 | Mostrar precisión de la ubicación (± m) para distinguir exacta de aproximada | Implementado | `js/geolocalizacion.js` |
-| RF10 | Avisar cuando el usuario está a ≤ 50 m de una ruta (cooldown 20 s) | Implementado | `js/proximidad.js` |
-| RF11 | Guardar las sesiones en el historial local y poder limpiarlo | Implementado | `js/historial.js` |
-| RF12 | Alternar tema claro/oscuro y recordarlo | Implementado | `js/tema.js` |
-| RF13 | Consultar dudas a un asistente en la página | Implementado | `js/chatbot.js` |
-| RF14 | Copiar la sesión terminada a la tabla `actividades` de Supabase | Implementado | `js/actividad.js` (`insert`) |
-| RF15 | Enviar eventos y crashes a Supabase Storage de forma automática | Implementado | `js/logs.js` (bucket `logs`) |
+| RF01 | Registrarse, iniciar y cerrar sesión con correo y contraseña | Implementado | `js/servicios/auth.js` |
+| RF02 | Subir avatar a Supabase Storage | Implementado | `js/servicios/auth.js`, bucket `avatars` |
+| RF03 | Ver las rutas predefinidas dibujadas en el mapa | Implementado | `js/core/datos.js`, `js/servicios/mapa.js` |
+| RF04 | Ver los eventos programados y abrir su ruta en el mapa | Implementado | `js/servicios/eventos.js` |
+| RF05 | Iniciar y detener una actividad (trote o carrera) con cronómetro | Implementado | `js/servicios/actividad.js` (`TipoActividad` → `Trote`/`Carrera`) |
+| RF06 | Panel en vivo con tiempo, distancia y ritmo min/km | Implementado | `js/servicios/actividad.js` (`#hud-actividad`) |
+| RF07 | Dibujar la traza del recorrido mientras hay actividad | Implementado | `js/servicios/actividad.js` (`refrescarTraza()`) |
+| RF08 | Seguimiento GPS continuo y botón para centrarse en la ubicación | Implementado | `js/servicios/geolocalizacion.js` |
+| RF09 | Mostrar precisión de la ubicación (± m) para distinguir exacta de aproximada | Implementado | `js/servicios/geolocalizacion.js` |
+| RF10 | Avisar cuando el usuario está a ≤ 50 m de una ruta (cooldown 20 s) | Implementado | `js/servicios/proximidad.js` |
+| RF11 | Guardar las sesiones en el historial local y poder limpiarlo | Implementado | `js/servicios/historial.js` |
+| RF12 | Alternar tema claro/oscuro y recordarlo | Implementado | `js/servicios/tema.js` |
+| RF13 | Consultar dudas a un asistente en la página | Implementado | `js/servicios/chatbot.js` |
+| RF14 | Copiar la sesión terminada a la tabla `actividades` de Supabase | Implementado | `js/servicios/actividad.js` (`insert`) |
+| RF15 | Enviar eventos y crashes a Supabase Storage de forma automática | Implementado | `js/servicios/logs.js` (bucket `logs`) |
 
 ### Requisitos originales que quedaron fuera de alcance
 
@@ -112,7 +112,7 @@ que no se asuman como parte del sistema:
 
 Claves antiguas (`runwell_historial` y registros con `duracionSegundos` /
 `distanciaMetros`) se migran al arrancar y se unifican en el formato actual
-(`migrarDatosAntiguos()`, `js/historial.js`).
+(`migrarDatosAntiguos()`, `js/servicios/historial.js`).
 
 ### 5.2 Datos en Supabase
 
@@ -140,5 +140,5 @@ Claves antiguas (`runwell_historial` y registros con `duracionSegundos` /
   logs 8), `Documentacion del desarrollo/04-Pruebas/Pruebas.md`.
 - Las políticas de Supabase, por sondeo externo sin sesión
   (`Documentación Supabase.md`).
-- Las clases y jerarquías, por `grep` sobre `js/*.js` (ver
+- Las clases y jerarquías, por `grep` sobre `js/core/` y `js/servicios/` (ver
   `Documentacion del desarrollo/03-Diseño-UML/Diagrama de clases.png`).

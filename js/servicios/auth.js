@@ -1,11 +1,11 @@
-// js/auth.js — Autenticación contra Supabase: registro, login, logout y avatar.
+// js/servicios/auth.js — Autenticación contra Supabase: registro, login, logout y avatar.
 //
 // AuthService es un servicio sin estado propio (no necesita el estado
 // compartido): hereda de ServicioBase para poder publicar eventos al bus.
 
-import { supabase } from '../supabase.js';
-import { ServicioBase } from './base.js';
-import { AVATAR_POR_DEFECTO, BUCKET_AVATARES } from './recursos.js';
+import { supabase } from '../supabase/supabase.js';
+import { ServicioBase } from '../core/base.js';
+import { AVATAR_POR_DEFECTO, BUCKET_AVATARES } from '../core/recursos.js';
 
 export class AuthService extends ServicioBase {
     constructor(store) {

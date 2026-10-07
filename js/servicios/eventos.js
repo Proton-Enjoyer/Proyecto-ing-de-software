@@ -1,10 +1,10 @@
-// js/eventos.js — Sección de Eventos: tarjetas por ruta y botón "Ver Ruta en Mapa".
+// js/servicios/eventos.js — Sección de Eventos: tarjetas por ruta y botón "Ver Ruta en Mapa".
 
-import { misRutas } from './datos.js';
-import { estado } from './estado.js';
-import { eventosGrid } from './dom.js';
+import { misRutas } from '../core/datos.js';
+import { estado } from '../core/estado.js';
+import { eventosGrid } from '../core/dom.js';
 import { abrirMapa } from './mapa.js';
-import { ServicioBase } from './base.js';
+import { ServicioBase } from '../core/base.js';
 
 export class EventosController extends ServicioBase {
     constructor(store = estado) {

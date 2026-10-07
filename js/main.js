@@ -4,19 +4,19 @@
 // Ninguna otra clase crea dependencias: este es el único lugar que conoce a
 // todas las piezas y las une.
 
-import { estado } from './estado.js';
-import * as dom from './dom.js';
-import { abrirMapa, cerrarMapa } from './mapa.js';
-import { iniciarTracking, obtenerUbicacion } from './geolocalizacion.js';
-import { iniciarActividad } from './actividad.js';
-import { ocultarPrompt } from './proximidad.js';
-import { renderizarEventos } from './eventos.js';
-import { mostrarSeccion, alternarMenuMovil, cerrarMenuMovil } from './navegacion.js';
-import { renderizarHistorial, iniciarHistorial } from './historial.js';
-import { iniciarTema } from './tema.js';
-import { iniciarAutenticacion } from './auth.js';
-import { iniciarLogs } from './logs.js';
-import { inicializarChatbot } from './chatbot.js';
+import { estado } from './core/estado.js';
+import * as dom from './core/dom.js';
+import { abrirMapa, cerrarMapa } from './servicios/mapa.js';
+import { iniciarTracking, obtenerUbicacion } from './servicios/geolocalizacion.js';
+import { iniciarActividad } from './servicios/actividad.js';
+import { ocultarPrompt } from './servicios/proximidad.js';
+import { renderizarEventos } from './servicios/eventos.js';
+import { mostrarSeccion, alternarMenuMovil, cerrarMenuMovil } from './servicios/navegacion.js';
+import { renderizarHistorial, iniciarHistorial } from './servicios/historial.js';
+import { iniciarTema } from './servicios/tema.js';
+import { iniciarAutenticacion } from './servicios/auth.js';
+import { iniciarLogs } from './servicios/logs.js';
+import { inicializarChatbot } from './servicios/chatbot.js';
 
 /**
  * Inicia la actividad desde el prompt de proximidad: abre esa ruta y arranca.

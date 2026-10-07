@@ -1,13 +1,13 @@
-// js/geolocalizacion.js — Permiso, seguimiento continuo y manejo de errores del GPS.
+// js/servicios/geolocalizacion.js — Permiso, seguimiento continuo y manejo de errores del GPS.
 //
 // Regla de errores que respeta toda la clase: lo automático es silencio
 // (consola) y lo que pide el usuario avisa (alerta en pantalla `#alerta-gps`).
 
-import { estado } from './estado.js';
+import { estado } from '../core/estado.js';
 import { evaluarProximidad } from './proximidad.js';
 import { registrarPunto } from './actividad.js';
-import { ServicioBase } from './base.js';
-import { AVATAR_POR_DEFECTO } from './recursos.js';
+import { ServicioBase } from '../core/base.js';
+import { AVATAR_POR_DEFECTO } from '../core/recursos.js';
 
 // Lecturas con imprecisión mayor a este valor se descartan.
 const MAX_PRECISION_ACEPTADA_M = 35;

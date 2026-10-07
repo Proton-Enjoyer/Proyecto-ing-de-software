@@ -1,7 +1,7 @@
-// js/mapa.js — Apertura/cierre, dibujo de rutas, marcadores y popups (Leaflet).
+// js/servicios/mapa.js — Apertura/cierre, dibujo de rutas, marcadores y popups (Leaflet).
 
-import { estado } from './estado.js';
-import { misRutas } from './datos.js';
+import { estado } from '../core/estado.js';
+import { misRutas } from '../core/datos.js';
 import {
     iniciarActividad,
     detenerActividad,
@@ -10,7 +10,7 @@ import {
 } from './actividad.js';
 import { obtenerUbicacion } from './geolocalizacion.js';
 import { mostrarSeccion } from './navegacion.js';
-import { ServicioBase } from './base.js';
+import { ServicioBase } from '../core/base.js';
 
 export class MapController extends ServicioBase {
     #map = null;              // referencia local al mapa (mismo objeto que estado.mapa)

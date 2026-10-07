@@ -23,8 +23,6 @@ La geolocalización solo funciona en contextos seguros (HTTPS o `localhost`).
 
 ```
 ├── index.html            estructura de la página (secciones, mapa, HUD, prompt)
-├── supabase-config.js    SUPABASE_URL + SUPABASE_KEY (clave pública, versionada a propósito)
-├── supabase.js           cliente de Supabase (browser client)
 ├── css/
 │   ├── variables.css     :root, tema oscuro, reset (se carga primero)
 │   ├── base.css          nav, hero, botones, switch de tema, menú hamburguesa
@@ -33,24 +31,12 @@ La geolocalización solo funciona en contextos seguros (HTTPS o `localhost`).
 │   ├── chatbot.css       ventana flotante del asistente (chips, mensajes)
 │   └── responsive.css    media queries (móvil, navbar, menú desplegable)
 ├── js/
-│   ├── base.js           abstracciones: EmisorEventos, bus, ServicioBase, Repositorio
-│   ├── recursos.js       constantes compartidas (avatar por defecto, bucket de avatares)
-│   ├── datos.js          rutas mock (misRutas)
-│   ├── util.js           funciones puras: tiempo, distancia (Haversine), ritmo, colisión
-│   ├── estado.js         estado compartido (mapa, GPS, actividad, popups)
-│   ├── dom.js            referencias a elementos del DOM (una sola vez)
-│   ├── actividad.js      Actividad: cronómetro, HUD, traza, guardado de sesiones
-│   ├── proximidad.js     ProximityDetector: detección ≤ 50 m + prompt (cooldown 20 s)
-│   ├── geolocalizacion.js GeolocationService: seguimiento GPS, errores, marcador
-│   ├── mapa.js           MapController: abrir/cerrar mapa, dibujo de rutas y popups
-│   ├── eventos.js        EventosController: tarjetas de la sección Eventos
-│   ├── navegacion.js     Navegacion: mostrar/ocultar secciones + menú móvil
-│   ├── historial.js      HistoryRepository: localStorage (guardado, lectura, migración)
-│   ├── tema.js           Tema: modo oscuro persistente (clave `runwell-tema`)
-│   ├── auth.js           AuthService: modal de login/registro y sesión
-│   ├── chatbot.js        Chatbot: asistente de la interfaz
-│   ├── logs.js           Logger: eventos y crashes → Supabase Storage (bucket `logs`)
-│   └── main.js           raíz de composición: instancia y conecta las piezas
+│   ├── main.js           raíz de composición: instancia y conecta las piezas
+│   ├── core/             base (EmisorEventos, bus, ServicioBase, Repositorio) ·
+│   │                     estado (StateStore) · dom · recursos · util · datos (rutas)
+│   ├── servicios/        actividad · mapa · proximidad · geolocalizacion · historial
+│   │                     logs · auth · tema · eventos · navegacion · chatbot
+│   └── supabase/         supabase.js (cliente) + supabase-config.js (clave pública)
 ```
 
 Estilo orientado a objetos: `EmisorEventos` (Observer) → `bus` + `ServicioBase` +
@@ -94,11 +80,11 @@ declaraciones de función).
   (`tipo`, `tiempo`, `distancia`); si esa subida falla, solo se avisa por
   consola y el registro local sigue ahí.
 - Modo oscuro persistente (`runwell-tema`).
-- **Registro e inicio de sesión** con sesión persistente (`js/auth.js`):
+- **Registro e inicio de sesión** con sesión persistente (`js/servicios/auth.js`):
   modal de login/registro, avatar de perfil (bucket `avatars`) y cierre de
   sesión. El historial local y el avatar conviven con la copia sincronizada
   en Supabase.
-- **Logs de la página a Supabase Storage** (`js/logs.js`): captura crashes
+- **Logs de la página a Supabase Storage** (`js/servicios/logs.js`): captura crashes
   (errores JS no manejados, promesas rechazadas y recursos rotos) y eventos de
   uso (secciones, mapa, actividad, login, GPS) más un heartbeat con el estado
   de la app. Los eventos se suben como JSON por sesión en el bucket `logs`
@@ -166,7 +152,7 @@ Organizada por etapa del proyecto (dentro de `Documentacion del desarrollo/`):
 
 ### Sobre la clave de Supabase
 
-`supabase-config.js` está versionado en el repo a propósito. Contiene
+`js/supabase/supabase-config.js` está versionado en el repo a propósito. Contiene
 `SUPABASE_URL` y `SUPABASE_KEY`, donde la key es de tipo
 `sb_publishable_...`: una **clave pública de cliente** que Supabase diseñó para
 ir embebida en el frontend. No es un secreto y no otorga accesos por sí sola.

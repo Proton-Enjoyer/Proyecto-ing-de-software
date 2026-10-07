@@ -72,7 +72,7 @@ window.addEventListener('unhandledrejection', e => window.__errores.push('promis
         <section id="planes-section" class="planes-section hidden">
             <h2>Próximos Eventos</h2>
             <div class="planes-grid">
-                <!-- Se llenará dinámicamente desde js/eventos.js -->
+                <!-- Se llenará dinámicamente desde js/servicios/eventos.js -->
             </div>
         </section>
 
@@ -263,7 +263,7 @@ log('DETENER-VISIBLE-SIN-REABRIR', !!btnStop);
 btnStop.click();
 await w(900);
 log('HUD-oculto-al-detener', !visible($('hud-actividad')));
-log('actividad-detida', (await import('./js/estado.js')).estado.actividad.activa === false);
+log('actividad-detida', (await import('./js/core/estado.js')).estado.actividad.activa === false);
 
 // --- 5. Tras detener, el popup vuelve a ofrecer Trote/Carrera
 const pop2 = document.querySelector('.leaflet-popup');
@@ -286,9 +286,9 @@ log('historial-tipo-Trote', h && h[0] && h[0].tipo === 'Trote');
 log('historial-campos', h && h[0] && ['id','tipo','ruta','fecha','tiempo','distancia','ritmo'].every(k => k in h[0]));
 
 // --- 7. Ciclo completo: segundo intento desde el prompt de proximidad
-const E = await import('./js/estado.js');
-const A = await import('./js/actividad.js');
-const M = await import('./js/mapa.js');
+const E = await import('./js/core/estado.js');
+const A = await import('./js/servicios/actividad.js');
+const M = await import('./js/servicios/mapa.js');
 A.iniciarActividad(1, 'carrera');
 await w(900);
 log('carrera-popup-abierto', visible(document.querySelector('.leaflet-popup')));
@@ -312,7 +312,7 @@ $('close-map').click();
 await w(500);
 A.detenerActividad();
 await w(400);
-log('cerrar-mapa-no-cola-sesion', (await import('./js/estado.js')).estado.actividad.activa === false);
+log('cerrar-mapa-no-cola-sesion', (await import('./js/core/estado.js')).estado.actividad.activa === false);
 h = JSON.parse(localStorage.getItem('runwell-historial') || '[]');
 log('sin-sesion-fantasma', h.length === 3, h.length);
 

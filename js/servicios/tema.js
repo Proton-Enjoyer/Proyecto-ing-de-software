@@ -1,7 +1,7 @@
-// js/tema.js — Modo oscuro persistente en localStorage (clave `runwell-tema`).
+// js/servicios/tema.js — Modo oscuro persistente en localStorage (clave `runwell-tema`).
 
-import { btnTheme } from './dom.js';
-import { ServicioBase } from './base.js';
+import { btnTheme } from '../core/dom.js';
+import { ServicioBase } from '../core/base.js';
 
 const CLAVE_TEMA = 'runwell-tema';
 

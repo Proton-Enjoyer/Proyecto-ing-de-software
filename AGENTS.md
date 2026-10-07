@@ -5,10 +5,10 @@ Frontend puro: HTML, CSS y JavaScript (sin frameworks y sin backend propio: usa 
 como BaaS para autenticación, persistencia y almacenamiento). Mapas con Leaflet + OpenStreetMap.
 
 ## Funcionalidades actuales
-- Rutas predefinidas en Maracaibo (zonas de LUZ y Paseo Sur) como mock data en `js/datos.js`.
+- Rutas predefinidas en Maracaibo (zonas de LUZ y Paseo Sur) como mock data en `js/core/datos.js`.
 - Mapa interactivo que dibuja las rutas (Leaflet).
 - Sección de Eventos con día/hora programados por ruta y botón "Ver Ruta en Mapa".
-- Actividad tipo **trote o carrera** con cronómetro: se inicia desde los popups del mapa o desde el prompt de proximidad y se detiene con "Detener". El estado vive en el objeto compartido `estado` (`js/estado.js`).
+- Actividad tipo **trote o carrera** con cronómetro: se inicia desde los popups del mapa o desde el prompt de proximidad y se detiene con "Detener". El estado vive en el objeto compartido `estado` (`js/core/estado.js`).
 - Geolocalización: marcador azul del usuario, botón "📍" para centrarse y **seguimiento continuo** (`iniciarTracking()` con `watchPosition` al cargar la página). Regla de errores: **lo automático es silencio (consola) y lo que pide el usuario avisa** en pantalla (`#alerta-gps`, `mostrarErrorGPS()`). Las peticiones automáticas van **sin `timeout`** y con `console.warn`: con `timeout: 10000` morían a los 10 s mientras el diálogo de permiso seguía abierto, Firefox retiraba el diálogo (ya no había nada pendiente) y saltaba una alerta sin que el usuario hubiera pedido nada — imposible conceder el permiso. Los `flyTo` llevan `{ duration: 1.5 }`: sin duración, Leaflet calcula `1000 * S * 0.8` ms según la distancia y el vuelo puede tardar varios segundos (sensación de "no hace nada"). Al pulsar 📍 se muestra un toast azul (`.info`) con coordenadas y precisión ± m, y el popup del marcador también — es el diagnóstico para saber si el navegador da ubicación exacta o aproximada (WiFi/IP).
 - Detección de proximidad: al acercarse ≤ 50 m a una ruta aparece un prompt para iniciar trote/carrera (con cooldown de 20 s y colisión punto-segmento en metros).
 - Traza del recorrido: línea punteada azul que crece con cada posición mientras hay actividad (`refrescarTraza()`).
@@ -26,31 +26,34 @@ css/mapa.css
 css/secciones.css
 css/chatbot.css    ventana flotante del asistente (chips, mensajes)
 css/responsive.css
-js/base.js          abstracciones compartidas: `EmisorEventos`, `bus`, `EVENTO`,
-                    `ServicioBase`, `Repositorio`. Sin imports a propósito, para
-                    que cualquier módulo pueda heredar de él sin crear ciclos
-js/recursos.js      constantes compartidas: `AVATAR_POR_DEFECTO`, `BUCKET_AVATARES`
-js/datos.js         rutas mock
-js/util.js          funciones puras (tiempo, distancia, ritmo, colisión)
-js/estado.js        `StateStore` (extiende `EmisorEventos`): el estado compartido
-js/dom.js           referencias al DOM (resueltas una sola vez)
-js/actividad.js     `Actividad`, `TipoActividad` → `Trote`/`Carrera`: cronómetro,
-                    HUD, traza, popups, guardado de sesiones
-js/proximidad.js    `ProximityDetector`: detección de cercanía + prompt
-js/geolocalizacion.js `GeolocationService`: seguimiento GPS, errores, marcador
-js/mapa.js          `MapController`: apertura/cierre, dibujo de rutas, popups
-js/eventos.js       `EventosController`: tarjetas de la sección Eventos
-js/navegacion.js    `Navegacion`: mostrar/ocultar secciones + menú móvil
-js/historial.js     `HistoryRepository`: localStorage: guardado, lectura, render,
-                    migración
-js/tema.js          `Tema`: modo oscuro
-js/logs.js          `Logger`: eventos y crashes → Supabase Storage (bucket `logs`)
-js/auth.js          `AuthService`: modal de login/registro y sesión
-js/chatbot.js       `Chatbot`: asistente de la interfaz
+js/core/
+  base.js          abstracciones compartidas: `EmisorEventos`, `bus`, `EVENTO`,
+                   `ServicioBase`, `Repositorio`. Sin imports a propósito, para
+                   que cualquier módulo pueda heredar de él sin crear ciclos
+  recursos.js      constantes compartidas: `AVATAR_POR_DEFECTO`, `BUCKET_AVATARES`
+  datos.js         rutas mock
+  util.js          funciones puras (tiempo, distancia, ritmo, colisión)
+  estado.js        `StateStore` (extiende `EmisorEventos`): el estado compartido
+  dom.js           referencias al DOM (resueltas una sola vez)
+js/servicios/
+  actividad.js     `Actividad`, `TipoActividad` → `Trote`/`Carrera`: cronómetro,
+                   HUD, traza, popups, guardado de sesiones
+  proximidad.js    `ProximityDetector`: detección de cercanía + prompt
+  geolocalizacion.js `GeolocationService`: seguimiento GPS, errores, marcador
+  mapa.js          `MapController`: apertura/cierre, dibujo de rutas, popups
+  eventos.js       `EventosController`: tarjetas de la sección Eventos
+  navegacion.js    `Navegacion`: mostrar/ocultar secciones + menú móvil
+  historial.js     `HistoryRepository`: localStorage: guardado, lectura, render,
+                   migración
+  tema.js          `Tema`: modo oscuro
+  logs.js          `Logger`: eventos y crashes → Supabase Storage (bucket `logs`)
+  auth.js          `AuthService`: modal de login/registro y sesión
+  chatbot.js       `Chatbot`: asistente de la interfaz
+js/supabase/
+  supabase.js          cliente de Supabase (browser client)
+  supabase-config.js   `SUPABASE_URL` y `SUPABASE_KEY` (clave pública)
 js/main.js          punto de entrada: instancia las piezas y conecta botones ↔
                     servicios (raíz de composición: el único que los conoce a todos)
-supabase-config.js  `SUPABASE_URL` y `SUPABASE_KEY` (clave pública, versionada a propósito)
-supabase.js         cliente de Supabase (browser client)
 Documentacion del desarrollo/
                     01-Planificación/  Gantt, Metodologías, Matriz de Riesgos,
                                        Diagrama de actividades
@@ -77,7 +80,7 @@ Grafo de dependencias (sin ciclos): `datos/util/estado/dom` → `historial` → 
 - Filtrado/selección de rutas (por zona, distancia o dificultad).
 - Dashboard de estadísticas e historial de progreso (agregados).
 
-Registro e inicio de sesión **ya están implementados** (`js/auth.js`: modal,
+Registro e inicio de sesión **ya están implementados** (`js/servicios/auth.js`: modal,
 sesión y avatar), así que no figuran entre lo pendiente. El frontend se
 integra con Supabase como BaaS: auth, historial y actividades en tablas
 propias, avatares en Storage (bucket `avatars`) y logs de uso (bucket
@@ -86,14 +89,14 @@ tal cual (Vercel). La seguridad está en las políticas RLS y de Storage, no
 en ocultar la clave de cliente.
 
 ## Notas de desarrollo
-- **Logs** (`js/logs.js`): eventos de uso y crashes se suben a Supabase
+- **Logs** (`js/servicios/logs.js`): eventos de uso y crashes se suben a Supabase
   Storage (bucket `logs`) cada 60 s, al crash y al cerrar la pestaña; fallos
   de subida silenciosos (solo consola). La prueba local vive en
   `__probe_logs.html` (arnés versionado, como todos; ver el punto siguiente).
 - **Módulos ES**: hay que servir por HTTP (`python3 -m http.server`); `file://` no carga los módulos. `L` (Leaflet) es un global accesible desde los módulos porque se carga como script clásico antes de `main.js`.
 - El mismo popup se vincula a los marcadores de inicio y fin de cada ruta (duplicado de listeners por diseño).
 - `abrirMapa()` borra y recrea todos los marcadores, con lo que cualquier popup abierto muere con su marcador. Por eso `MapController.abrirPopupRuta(idx)` guarda los marcadores por ruta (`#markersRuta`) y reabre el popup tras redibujar: sin eso, iniciar o detener una actividad cerraba el popup y había que volver a tocar el marcador para llegar a "Detener". `actividad.js` lo llama justo después de cada `abrirMapa()`.
-- El popup de Leaflet **no está en el `document` hasta que se abre**: `estado.popupsRuta` registra los nodos por ruta para poder actualizar su UI aunque esté cerrado (si no, iniciar actividad desde el prompt dejaría el popup desfasado). `js/eventos.js` reutiliza esos nodos para abrir el popup tras "Ver Ruta en Mapa".
+- El popup de Leaflet **no está en el `document` hasta que se abre**: `estado.popupsRuta` registra los nodos por ruta para poder actualizar su UI aunque esté cerrado (si no, iniciar actividad desde el prompt dejaría el popup desfasado). `js/servicios/eventos.js` reutiliza esos nodos para abrir el popup tras "Ver Ruta en Mapa".
 - El ícono del usuario se crea de forma perezosa (`iconoUsuario()`) para no depender del orden de carga de Leaflet.
 - Los botones del mapa usan `padding: 0` para quedar circulares (el selector global `button` agrega padding por defecto).
 - Las reglas CSS con `!important` de modo oscuro (tarjetas de historial) ganan por diseño: `.dark-theme .plane-card` debe competir con `body`/herencia.

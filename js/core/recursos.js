@@ -1,4 +1,4 @@
-// js/recursos.js — Recursos y constantes compartidas por varios servicios.
+// js/core/recursos.js — Recursos y constantes compartidas por varios servicios.
 //
 // Centraliza valores que antes estaban duplicados o embebidos en el HTML:
 //   AVATAR_POR_DEFECTO : imagen inicial para el perfil sin foto.

@@ -1,4 +1,4 @@
-// js/estado.js — Estado compartido de la aplicación.
+// js/core/estado.js — Estado compartido de la aplicación.
 //
 // Contiene los datos que varios módulos necesitan leer y escribir a la vez:
 // referencias de Leaflet, la última posición del GPS, la traza del recorrido,
@@ -39,7 +39,7 @@ export class StateStore extends EmisorEventos {
     // --- Popups de Leaflet registrados por ruta ---
     // El popup vive fuera del `document` hasta que se abre, así que lo guardamos
     // para poder actualizar su UI aunque esté cerrado (si no, iniciar actividad
-    // desde el prompt dejaría el popup desfasado). `js/eventos.js` reutiliza estos
+    // desde el prompt dejaría el popup desfasado). `js/servicios/eventos.js` reutiliza estos
     // nodos para abrir el popup tras "Ver Ruta en Mapa".
     #popupsRuta = {};
 

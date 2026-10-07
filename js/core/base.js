@@ -1,4 +1,4 @@
-// js/base.js — abstracciones compartidas del dominio.
+// js/core/base.js — abstracciones compartidas del dominio.
 //
 // Este módulo NO importa nada del proyecto: es la capa base de la que heredan
 // el bus de eventos, los servicios, el estado y los repositorios. Al no tener

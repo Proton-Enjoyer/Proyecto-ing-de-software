@@ -1,4 +1,4 @@
-// js/actividad.js — Gestión de la actividad en curso (trote o carrera):
+// js/servicios/actividad.js — Gestión de la actividad en curso (trote o carrera):
 // cronómetro, panel HUD, traza del recorrido, popups y persistencia.
 //
 // La clase Actividad orchestra; el comportamiento específico de cada tipo de
@@ -6,13 +6,13 @@
 // cómo se presenta el tipo. Así el orquestador no tiene condicionales por tipo.
 
 import { abrirMapa, abrirPopupRuta } from './mapa.js';
-import { estado } from './estado.js';
-import { misRutas } from './datos.js';
-import { formatoTiempo, ritmoMinPorKm, distanciaMetros } from './util.js';
-import { hudPanel, hudTime, hudDist, hudRitmo } from './dom.js';
+import { estado } from '../core/estado.js';
+import { misRutas } from '../core/datos.js';
+import { formatoTiempo, ritmoMinPorKm, distanciaMetros } from '../core/util.js';
+import { hudPanel, hudTime, hudDist, hudRitmo } from '../core/dom.js';
 import { guardarActividad } from './historial.js';
-import { supabase } from '../supabase.js';
-import { ServicioBase } from './base.js';
+import { supabase } from '../supabase/supabase.js';
+import { ServicioBase } from '../core/base.js';
 
 /**
  * Comportamiento común de los tipos de sesión. La clase base define el

@@ -1,4 +1,4 @@
-// js/navegacion.js — Navegación entre secciones (Inicio / Eventos / Historial / Mapa)
+// js/servicios/navegacion.js — Navegación entre secciones (Inicio / Eventos / Historial / Mapa)
 // y menú desplegable móvil (hamburguesa).
 
 import {
@@ -7,9 +7,9 @@ import {
     historialSection,
     mapContainer,
     navItems
-} from './dom.js';
-import { estado } from './estado.js';
-import { ServicioBase } from './base.js';
+} from '../core/dom.js';
+import { estado } from '../core/estado.js';
+import { ServicioBase } from '../core/base.js';
 
 export class Navegacion extends ServicioBase {
     constructor(store = estado) {

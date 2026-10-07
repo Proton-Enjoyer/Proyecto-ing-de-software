@@ -10,9 +10,9 @@ Si un patrón no aparece aquí, es porque en `js/` no se puede señalar.
 
 | | |
 |---|---|
-| **Dónde** | `js/base.js`: clase `EmisorEventos` y la instancia única `bus` |
+| **Dónde** | `js/core/base.js`: clase `EmisorEventos` y la instancia única `bus` |
 | **Productores** | las 10 clases de servicio, mediante `ServicioBase.registrar(tipo, detalle)` |
-| **Suscriptor** | `Logger` (`js/logs.js`), que se suscribe una única vez al `bus` |
+| **Suscriptor** | `Logger` (`js/servicios/logs.js`), que se suscribe una única vez al `bus` |
 
 `EmisorEventos` mantiene el registro de oyentes en un campo privado
 (`#oyentes`), ofrece `suscribir` / `cancelar` / `emitir` y aísla los fallos:
@@ -26,8 +26,8 @@ se pudo añadir la telemetría sin tocar un solo módulo existente.
 
 | | |
 |---|---|
-| **Contrato** | `js/base.js`: clase `Repositorio` con `guardar()`, `leer()` y `limpiar()` |
-| **Implementación** | `js/historial.js`: `HistoryRepository extends Repositorio` |
+| **Contrato** | `js/core/base.js`: clase `Repositorio` con `guardar()`, `leer()` y `limpiar()` |
+| **Implementación** | `js/servicios/historial.js`: `HistoryRepository extends Repositorio` |
 
 `Repositorio` fija la interfaz de persistencia y sus métodos lanzan un error
 si la subclase no los implementa. `HistoryRepository` opera sobre
@@ -58,10 +58,10 @@ forma de crear una segunda instancia por accidente. No hay un contador ni un
 
 | Jerarquía | Base | Subclases |
 |---|---|---|
-| Dominio | `TipoActividad` (`js/actividad.js`) | `Trote`, `Carrera` |
-| Servicios | `ServicioBase` (`js/base.js`) | `Actividad`, `AuthService`, `Chatbot`, `EventosController`, `GeolocationService`, `Logger`, `MapController`, `Navegacion`, `ProximityDetector`, `Tema` |
-| Estado | `EmisorEventos` (`js/base.js`) | `StateStore` (`js/estado.js`) |
-| Persistencia | `Repositorio` (`js/base.js`) | `HistoryRepository` |
+| Dominio | `TipoActividad` (`js/servicios/actividad.js`) | `Trote`, `Carrera` |
+| Servicios | `ServicioBase` (`js/core/base.js`) | `Actividad`, `AuthService`, `Chatbot`, `EventosController`, `GeolocationService`, `Logger`, `MapController`, `Navegacion`, `ProximityDetector`, `Tema` |
+| Estado | `EmisorEventos` (`js/core/base.js`) | `StateStore` (`js/core/estado.js`) |
+| Persistencia | `Repositorio` (`js/core/base.js`) | `HistoryRepository` |
 
 Encapsulación: los atributos son campos privados con `#`
 (`EmisorEventos.#oyentes`, `StateStore.#mapa`, `HistoryRepository.#storage`,
@@ -77,7 +77,7 @@ repositorio habla con `Repositorio`, no con `HistoryRepository`.
 | | |
 |---|---|
 | **Raíz** | `js/main.js` — el único módulo que instancia y conecta las piezas |
-| **Inyectado** | el `store` que recibe todo `ServicioBase`, el `storage` de `HistoryRepository`, las referencias de `js/dom.js` |
+| **Inyectado** | el `store` que recibe todo `ServicioBase`, el `storage` de `HistoryRepository`, las referencias de `js/core/dom.js` |
 
 Las clases no construyen lo que necesitan: lo reciben. Eso mantiene el grafo
 de dependencias sin ciclos y permite sustituir cada dependencia en una prueba.

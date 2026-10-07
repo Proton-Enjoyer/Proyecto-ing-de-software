@@ -1,4 +1,4 @@
-// js/historial.js — Persistencia y renderizado del historial de actividades.
+// js/servicios/historial.js — Persistencia y renderizado del historial de actividades.
 //
 // HistoryRepository implementa el contrato `Repositorio` sobre localStorage.
 // El almacenamiento se inyecta por el constructor, así que la misma clase
@@ -6,9 +6,9 @@
 //
 // Formato canónico: { id, tipo, ruta, fecha, tiempo, distancia, ritmo }
 
-import { historialLista, borrarHistorialBtn } from './dom.js';
-import { formatoTiempo } from './util.js';
-import { Repositorio } from './base.js';
+import { historialLista, borrarHistorialBtn } from '../core/dom.js';
+import { formatoTiempo } from '../core/util.js';
+import { Repositorio } from '../core/base.js';
 
 const CLAVE = 'runwell-historial';
 const CLAVE_LEGACY = 'runwell_historial';

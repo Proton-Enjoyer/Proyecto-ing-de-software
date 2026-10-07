@@ -1,4 +1,4 @@
-// js/logs.js — Captura de eventos y crashes de la página, con subida a Supabase.
+// js/servicios/logs.js — Captura de eventos y crashes de la página, con subida a Supabase.
 //
 // Logger es un suscriptor del bus de eventos: los servicios publican con
 // `registrar(...)` y este servicio los guarda en un buffer. También se suscribe
@@ -11,10 +11,10 @@
 // buffer y se reintentan; el fallo es silencioso en pantalla (solo consola) para
 // no degradar la experiencia del usuario.
 
-import { supabase } from '../supabase.js';
-import { SUPABASE_URL, SUPABASE_KEY } from '../supabase-config.js';
-import { estado } from './estado.js';
-import { ServicioBase, bus, EVENTO } from './base.js';
+import { supabase } from '../supabase/supabase.js';
+import { SUPABASE_URL, SUPABASE_KEY } from '../supabase/supabase-config.js';
+import { estado } from '../core/estado.js';
+import { ServicioBase, bus, EVENTO } from '../core/base.js';
 
 const BUCKET = 'logs';
 const DEFAULT_INTERVALO_MS = 60_000; // subida automática cada X milisegundos
