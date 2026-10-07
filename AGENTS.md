@@ -1,7 +1,8 @@
 # RunWell — Contexto del proyecto
 
 Aplicación web de seguimiento de running, proyecto académico de Ingeniería de Software.
-Frontend puro: HTML, CSS y JavaScript (sin frameworks ni backend). Mapas con Leaflet + OpenStreetMap.
+Frontend puro: HTML, CSS y JavaScript (sin frameworks y sin backend propio: usa Supabase
+como BaaS para autenticación, persistencia y almacenamiento). Mapas con Leaflet + OpenStreetMap.
 
 ## Funcionalidades actuales
 - Rutas predefinidas en Maracaibo (zonas de LUZ y Paseo Sur) como mock data en `js/datos.js`.
