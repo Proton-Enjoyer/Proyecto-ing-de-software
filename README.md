@@ -130,6 +130,9 @@ evidencia cruda check por check, en
 
 - `Documentacion del desarrollo/Sprints/Patrones de diseño.md` — patrones
   implementados y, aparte, los que **no** lo están.
+- `Documentacion del desarrollo/Sprints/Especificación de requisitos.md` —
+  especificación final: necesidades, actores, RF/RNF con su estado y
+  requisitos de datos.
 - `Documentacion del desarrollo/Sprints/Pruebas.md` — pruebas, cómo
   reproducirlas y evidencia cruda de la última pasada.
 - `Documentacion del desarrollo/Sprints/Documentación Supabase.md` —

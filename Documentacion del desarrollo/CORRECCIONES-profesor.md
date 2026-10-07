@@ -33,8 +33,16 @@ Pendiente de resolver **antes de la aprobación para transferencia**.
       auth (asunto suyo, no del repo).
 - [ ] **2. Planificación completa** — actividades, hitos, responsabilidades,
       cronograma/Gantt y análisis de riesgos.
-- [ ] **3. Especificación final de requisitos** — necesidades, requisitos
+- [x] **3. Especificación final de requisitos** — necesidades, requisitos
       funcionales, no funcionales, actores y requisitos de datos.
+      → `Sprints/Especificación de requisitos.md`: 15 RF y 15 RNF del sistema
+      final, cada uno con estado (**implementado / parcial / no medido / fuera
+      de alcance**) y archivo de evidencia; necesidades derivadas del estudio
+      comparativo; actores (Corredor y Supabase); requisitos de datos
+      (`localStorage` + Supabase) y limitaciones declaradas. La especificación
+      inicial (visión original) se conserva en `Requerimientos funcionales.docx`
+      como historia; el `.md` documenta qué se implementó de aquella visión y
+      qué no, para que no se asuma lo no hecho.
 - [x] **4. UML actualizado del sistema final** — mínimo diagrama de clases y de
       casos de uso. Los dos diagramas se generaron desde código Mermaid (fuente
       verificada con render) y quedaron como imagen en `Sprints/Diagrama de
@@ -113,13 +121,14 @@ Pendiente de resolver **antes de la aprobación para transferencia**.
 
 ## Estado conocido
 
-- **Hechos**: 1 (`1c33ed2`), 4 (PNG nuevos, pendiente de commit), 5
-  (`6a2a377`), 6 (`97d7d06`), 7 (`870f1f8`), 8 (`55f8438`), 9 (`15f1ac2`),
-  10 (`fdd6785`), 11 (verificado, sin cambios que commitear).
-- **Pendientes**: 2 (planificación/Gantt/riesgos) y 3 (especificación de
-  requisitos) — los resuelve el usuario en sus `.docx`, con los avisos ya
-  señalados: Metodologías desactualizado (sigue con `Usuario`/`Coach`/
-  `PlanEntrenamiento`), RF01/RF05 vs. auth real y matriz de riesgos titulada
-  "Sistema de Gestión de Rutinas Wellness con POO e IA" en vez de RunWell.
-- **Último commit del ciclo**: borrar `CORRECCIONES-profesor.md`.
+- **Hechos**: 1 (`1c33ed2`), 3 (`Especificación de requisitos.md`, pendiente
+  de commit), 4 (`a8f3ff3`), 5 (`6a2a377`), 6 (`97d7d06`), 7 (`870f1f8`),
+  8 (`55f8438`), 9 (`15f1ac2`), 10 (`fdd6785`), 11 (verificado).
+- **Pendientes**:
+  - **2 (planificación)**: Gantt ✅ (actividades, hitos y responsabilidades) y
+    análisis de riesgos ✅ en `Matriz y Clasificacion de Riesgos…docx`. Faltan
+    dos frases en ese `.docx` (arregla el usuario): la intro quedó duplicada
+    ("…diagrama de Gantt Tomando como base…") y la sección 3 aún dice
+    "solución Wellness".
+  - **Cierre**: borrar `CORRECCIONES-profesor.md` en el último commit.
 - El `docs/` original quedó vacío (los UML ahora son PNG en `Sprints/`).
