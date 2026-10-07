@@ -8,7 +8,7 @@ evidencia reproducible) que cargan la aplicación real, la ejercitan
 con clics y llamadas reales y capturan cualquier `window.onerror`. Cada arnés
 reporta sus checks a un servidor local (`pruebas/servidor.py`), que los guarda
 tal cual — esa salida sin editar es la evidencia versionada en
-[`Pruebas/evidencia/`](Pruebas/evidencia/).
+[`evidencia/`](evidencia/).
 
 ---
 
@@ -24,8 +24,8 @@ tal cual — esa salida sin editar es la evidencia versionada en
 | | | **8 corridas** | **156** | **156/156** |
 
 Detalle check por check (entrada y salida de cada uno) en
-`Pruebas/evidencia/*.txt`, una corrida por archivo, más el agregado de la
-pasada en `Pruebas/evidencia/resumen.json`.
+`evidencia/*.txt`, una corrida por archivo, más el agregado de la
+pasada en `evidencia/resumen.json`.
 
 ### Qué cubre cada bloque
 

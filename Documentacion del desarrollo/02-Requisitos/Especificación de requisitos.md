@@ -11,7 +11,7 @@ quedó a medias y qué quedó fuera de alcance, con el archivo donde se verifica
 
 ## 1. Necesidades
 
-Del estudio comparativo (`Tabla comparativa proyecto ing de software.docx`) y
+Del estudio comparativo (`05-Cierre/Tabla comparativa.docx`) y
 del alcance final:
 
 - **Rutas locales, no globales**: las apps del mercado (Strava, NRC,
@@ -137,8 +137,8 @@ Claves antiguas (`runwell_historial` y registros con `duracionSegundos` /
 
 - Los requisitos funcionales que tienen arnés están cubiertos por la pasada
   completa de pruebas: **156/156 checks** (geo 23, popup 30, e2e 37, POO 58,
-  logs 8), `Documentacion del desarrollo/Sprints/Pruebas.md`.
+  logs 8), `Documentacion del desarrollo/04-Pruebas/Pruebas.md`.
 - Las políticas de Supabase, por sondeo externo sin sesión
   (`Documentación Supabase.md`).
 - Las clases y jerarquías, por `grep` sobre `js/*.js` (ver
-  `Sprints/Diagrama de clases Final.png`).
+  `Documentacion del desarrollo/03-Diseño-UML/Diagrama de clases.png`).

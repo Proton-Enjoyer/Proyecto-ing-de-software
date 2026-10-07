@@ -63,7 +63,7 @@ Patrones de diseño **implementados** (solo los que se pueden señalar en el
 código): Observer, Repository, singleton por módulo, herencia/polimorfismo con
 encapsulación e inyección de dependencias. Cada uno con su archivo, su porqué
 y su verificación en
-`Documentacion del desarrollo/Sprints/Patrones de diseño.md`, que también
+`Documentacion del desarrollo/03-Diseño-UML/Patrones de diseño.md`, que también
 deja constancia de los patrones que **no** están implementados.
 
 Dependencias: `datos/util/estado/dom` → `historial` → `actividad` →
@@ -124,30 +124,32 @@ llamadas reales y capturan cualquier `window.onerror`. Última pasada completa
 
 Con cómo reproducirla (`pruebas/servidor.py` + `pruebas/correr.py`) y la
 evidencia cruda check por check, en
-`Documentacion del desarrollo/Sprints/Pruebas.md`.
+`Documentacion del desarrollo/04-Pruebas/Pruebas.md`.
 
 ## Documentación
 
-- `Documentacion del desarrollo/Sprints/Patrones de diseño.md` — patrones
-  implementados y, aparte, los que **no** lo están.
-- `Documentacion del desarrollo/Sprints/Especificación de requisitos.md` —
-  especificación final: necesidades, actores, RF/RNF con su estado y
-  requisitos de datos.
-- `Documentacion del desarrollo/Sprints/Pruebas.md` — pruebas, cómo
-  reproducirlas y evidencia cruda de la última pasada.
-- `Documentacion del desarrollo/Sprints/Documentación Supabase.md` —
-  esquema, políticas RLS/Storage y verificación de seguridad.
-- `Documentacion del desarrollo/Sprints/Cierre de proyecto.md` — cierre:
-  logros, dificultades, decisiones, mantenimiento y conclusiones.
-- `Documentacion del desarrollo/Sprints/Diagrama de clases Final.png` y
-  `Sprints/Diagrama de Casos de Uso Final.png` — UML del sistema final
-  (clases y casos de uso), exportados desde código Mermaid.
-- `Documentacion del desarrollo/Sprints/Diagrama de Gantt Final.png` —
-  planificación: actividades, hitos y responsables (cronograma).
-- `Documentacion del desarrollo/Sprints/Metodologias de desarrollo de SW V2, Grupo 6.docx`
-  — metodología incremental y planificación de los incrementos.
-- `Documentacion del desarrollo/Sprints/Matriz y Clasificacion de Riesgos - Sistema Wellness (1).docx`
-  — análisis y clasificación de riesgos del proyecto.
+Organizada por etapa del proyecto (dentro de `Documentacion del desarrollo/`):
+
+- `01-Planificación/` — planificación y gestión:
+  - `Diagrama de Gantt.png` — cronograma con actividades, hitos y responsables.
+  - `Metodologías de desarrollo de SW.docx` — metodología incremental e incrementos.
+  - `Matriz de Riesgos.docx` — análisis y clasificación de riesgos.
+  - `Diagrama de actividades.docx` — diagrama de actividades del proceso.
+- `02-Requisitos/` — requisitos y casos de uso:
+  - `Especificación de requisitos.md` — necesidades, actores, RF/RNF y datos.
+  - `Requerimientos funcionales.docx` y `Casos de uso.docx`.
+- `03-Diseño-UML/` — diseño:
+  - `Diagrama de clases.png` y `Diagrama de Casos de Uso.png` — UML del sistema final.
+  - `Diagrama de Actores.docx` — actores del sistema.
+  - `Patrones de diseño.md` — patrones implementados y los que **no** lo están.
+- `04-Pruebas/` — verificación:
+  - `Pruebas.md` — pruebas, cómo reproducirlas y evidencia de la última pasada.
+  - `capturas/` — capturas de pantalla; `evidencia/` — salidas crudas de los arneses.
+  - `Evidencias de la página.docx` — compilación de evidencias.
+- `05-Cierre/` — cierre:
+  - `Cierre de proyecto.md` — logros, dificultades, decisiones y conclusiones.
+  - `Tabla comparativa.docx` — comparación de herramientas/metodologías.
+- `06-Técnico/` — `Documentación Supabase.md` (esquema, RLS y Storage).
 
 ## Datos guardados (localStorage)
 
@@ -184,4 +186,4 @@ RLS y de Storage. Estado real hoy:
 La `service_role` (privilegios completos, salta RLS) nunca debe llegar al
 navegador: si alguna vez hace falta, va en el servidor / Edge Functions.
 Detalle completo, políticas SQL y el manejo de los datos de geolocalización
-en `Documentacion del desarrollo/Sprints/Documentación Supabase.md`.
+en `Documentacion del desarrollo/06-Técnico/Documentación Supabase.md`.

@@ -1,5 +1,5 @@
 # Arnés de pruebas: versionado a propósito, porque ES la evidencia
-# verificable de "Documentacion del desarrollo/Sprints/Pruebas.md"
+# verificable de "Documentacion del desarrollo/04-Pruebas/Pruebas.md"
 # (quien la revise puede volver a correrlo). No volver a ignorarlo.
 
 # Sistema / editores
@@ -13,7 +13,7 @@
 # `sb_publishable_...`: una clave pública de cliente que Supabase
 # diseñó para ir embebida en el frontend (no es la service_role).
 # La seguridad NO depende de ocultarla, sino de las políticas RLS
-# y de Storage. Ver "Documentacion del desarrollo/Sprints/
+# y de Storage. Ver "Documentacion del desarrollo/06-Técnico/
 # Documentación Supabase.md".
 # Si alguna vez se necesita una service_role, esa NUNCA se versiona:
 # va en variable de entorno del servidor o en un secret manager.

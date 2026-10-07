@@ -51,10 +51,17 @@ js/main.js          punto de entrada: instancia las piezas y conecta botones ↔
                     servicios (raíz de composición: el único que los conoce a todos)
 supabase-config.js  `SUPABASE_URL` y `SUPABASE_KEY` (clave pública, versionada a propósito)
 supabase.js         cliente de Supabase (browser client)
-Documentacion del desarrollo/Sprints/
-                    UML del sistema final en PNG: `Diagrama de clases Final.png`
-                    y `Diagrama de Casos de Uso Final.png` (exportados desde
-                    código Mermaid); planificación en `Diagrama de Gantt Final.png`
+Documentacion del desarrollo/
+                    01-Planificación/  Gantt, Metodologías, Matriz de Riesgos,
+                                       Diagrama de actividades
+                    02-Requisitos/     Especificación .md, Requerimientos
+                                       funcionales, Casos de uso
+                    03-Diseño-UML/     Diagrama de clases.png, Diagrama de Casos
+                                       de Uso.png, Actores, Patrones de diseño.md
+                    04-Pruebas/        Pruebas.md, capturas/, evidencia/
+                    05-Cierre/         Cierre de proyecto.md, Tabla comparativa
+                    06-Técnico/        Documentación Supabase.md
+                    Presentacion/      RunWELL.pdf
 README.md           cómo ejecutarla, estructura y datos guardados
 ```
 
@@ -90,7 +97,7 @@ en ocultar la clave de cliente.
 - El ícono del usuario se crea de forma perezosa (`iconoUsuario()`) para no depender del orden de carga de Leaflet.
 - Los botones del mapa usan `padding: 0` para quedar circulares (el selector global `button` agrega padding por defecto).
 - Las reglas CSS con `!important` de modo oscuro (tarjetas de historial) ganan por diseño: `.dark-theme .plane-card` debe competir con `body`/herencia.
-- **Pruebas: arneses de regresión versionados** (no hay framework): se hacen con HTML (`__*.html` en la raíz, **versionados a propósito** para que la evidencia sea reproducible) que capturan `window.onerror` y ejercitan la app con clics reales en Firefox headless, reportando a un servidor local. Los arneses actuales: `__geo.html` (4 escenarios `?esc=pendiente|concede|ok|denegado`, mockeando `navigator.geolocation`/`navigator.permissions`), `__popup.html` (30 checks del popup al iniciar/detener), `__e2e.html` (37 checks de regresión: navegación, mapa, historial, migración, chatbot, modal de auth, GPS), `__poo.html` (58 checks de jerarquía/encapsulación: Observer, contrato de `Repositorio`, jerarquías, singletons), `__probe_logs.html` (8 checks del Logger). Última pasada completa **2026-10-06**: **geo 23/23 · popup 30/30 · e2e 37/37 · POO 58/58 · logs 8/8 = 156/156**, 0 errores de consola. Se reproducen con `python3 pruebas/servidor.py 8000` (sirve la raíz y recoge los reportes de `/bc?d=`) y `python3 pruebas/correr.py`; documentación y evidencia cruda en `Documentacion del desarrollo/Sprints/Pruebas.md` y `.../Sprints/Pruebas/evidencia/`. Cada escenario corre con **perfil de Firefox desechable nuevo** (`/tmp/runwell-pruebas/ff-*`): reutilizar un perfil tras un kill a medias deja la sesión colgada y los reportes no llegan.
+- **Pruebas: arneses de regresión versionados** (no hay framework): se hacen con HTML (`__*.html` en la raíz, **versionados a propósito** para que la evidencia sea reproducible) que capturan `window.onerror` y ejercitan la app con clics reales en Firefox headless, reportando a un servidor local. Los arneses actuales: `__geo.html` (4 escenarios `?esc=pendiente|concede|ok|denegado`, mockeando `navigator.geolocation`/`navigator.permissions`), `__popup.html` (30 checks del popup al iniciar/detener), `__e2e.html` (37 checks de regresión: navegación, mapa, historial, migración, chatbot, modal de auth, GPS), `__poo.html` (58 checks de jerarquía/encapsulación: Observer, contrato de `Repositorio`, jerarquías, singletons), `__probe_logs.html` (8 checks del Logger). Última pasada completa **2026-10-06**: **geo 23/23 · popup 30/30 · e2e 37/37 · POO 58/58 · logs 8/8 = 156/156**, 0 errores de consola. Se reproducen con `python3 pruebas/servidor.py 8000` (sirve la raíz y recoge los reportes de `/bc?d=`) y `python3 pruebas/correr.py`; documentación y evidencia cruda en `Documentacion del desarrollo/04-Pruebas/Pruebas.md` y `.../04-Pruebas/evidencia/`. Cada escenario corre con **perfil de Firefox desechable nuevo** (`/tmp/runwell-pruebas/ff-*`): reutilizar un perfil tras un kill a medias deja la sesión colgada y los reportes no llegan.
 - Dos lecciones de estos arneses: (1) el script de pruebas debe inyectarse como `<script type="module">`, no clásico — como clásico corre antes del grafo de módulos y cada aserción falla en falso; (2) los checks que dependen de la subida a Supabase deben **sondear** (bucle de ~1 s hasta 30 s), no esperar un tiempo fijo: `Logger.subir()` saca el evento del buffer en cuanto arranca y solo incrementa `parte` cuando la petición responde, así que hay una ventana en la que el evento no está en ninguna de las dos partes.
 
 ## Preferencia de trabajo del usuario
